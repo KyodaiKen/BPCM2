@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9503DEE3-598F-427E-9D95-A82761E15BE5}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BPCM2</RootNamespace>
+    <AssemblyName>BPCM2</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet />
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet />
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>BPCM.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>
+    </CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>
+    </CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\BPCM\ADPCM\ADPCM.cs" />
+    <Compile Include="src\BPCM\ADPCM\ADPCM4Bit _MONO.cs" />
+    <Compile Include="src\BPCM\ADPCM\ADPCM4Bit.cs" />
+    <Compile Include="src\BPCM\ADPCM\Tunings.cs" />
+    <Compile Include="src\BPCM\BPCMStream2.cs" />
+    <Compile Include="src\BPCM\Compressors\arithmetic\AbstractModel.cs" />
+    <Compile Include="src\BPCM\Compressors\arithmetic\ArithmeticCoderCS.cs" />
+    <Compile Include="src\BPCM\Compressors\arithmetic\ModelOrder0.cs" />
+    <None Include="app.config" />
+    <Compile Include="src\BPCM\BPCM.cs" />
+    <Compile Include="src\BPCM\Helpers\BitsAndBytes.cs" />
+    <Compile Include="src\BPCM\Compressors\bzip2\BitWriter.cs" />
+    <Compile Include="src\BPCM\Compressors\bzip2\BZip2Compressor.cs" />
+    <Compile Include="src\BPCM\Compressors\bzip2\BZip2InputStream.cs" />
+    <Compile Include="src\BPCM\Compressors\bzip2\BZip2OutputStream.cs" />
+    <Compile Include="src\BPCM\Compressors\bzip2\ParallelBZip2OutputStream.cs" />
+    <Compile Include="src\BPCM\Compressors\bzip2\Rand.cs" />
+    <Compile Include="src\BPCM\Compressors\Compression.cs" />
+    <Compile Include="src\BPCM\Compressors\CRC32.cs" />
+    <Compile Include="src\BPCM\Helpers\ByteFormatter.cs" />
+    <None Include="src\BPCM\Compressors\lzma\Common\CommandLineParser.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Common\CRC.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Common\InBuffer.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Common\OutBuffer.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\LZMA\LzmaBase.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\LZMA\LzmaDecoder.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\LZMA\LzmaEncoder.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\LZ\IMatchFinder.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\LZ\LzBinTree.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\LZ\LzInWindow.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\LZ\LzOutWindow.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\RangeCoder\RangeCoder.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\RangeCoder\RangeCoderBit.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\Compress\RangeCoder\RangeCoderBitTree.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\ICoder.cs" />
+    <Compile Include="src\BPCM\Compressors\lzma\SevenZipHelper.cs" />
+    <Compile Include="src\BPCM\Helpers\CSV.cs" />
+    <Compile Include="src\BPCM\Helpers\RingBuffer.cs" />
+    <Compile Include="src\BPCM\PCM Containers\RIFFWave.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Dmo\AudioMediaSubtypes.cs" />
+    <None Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\Manufacturers.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveProviders\BPCMWaveProvider.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Utils\Decibels.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Utils\NativeMethods.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Utils\WavePositionExtensions.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\MmException.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\MmResult.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\MmTime.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveCallbackInfo.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveCallbackStrategy.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveHeader.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveHeaderFlags.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveInCapabilities.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveInEventArgs.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveInterop.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveOutCapabilities.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveOutSupport.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\WaveWindow.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveFormats\WaveFormat.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveFormats\WaveFormatEncoding.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveFormats\WaveFormatExtensible.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveFormats\WaveFormatExtraData.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\DirectSoundOut.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\IWaveBuffer.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\IWavePlayer.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\IWaveProvider.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\IWaveProviderFloat.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\PlaybackState.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\StoppedEventArgs.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\WaveBuffer.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\WaveOut.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveOutputs\WaveOutEvent.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveStreams\WaveOffsetStream.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveStreams\WaveOutBuffer.cs" />
+    <Compile Include="src\BPCM\Playback\NAudioLite\Wave\WaveStreams\WaveStream.cs" />
+    <Compile Include="src\Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 und x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,43 @@
+BPCM Stream structure - BPCM VERSION: 2
+=======================================
+
+This version range supports only 16 bit sampling input in INTEL little endian (in VLC called s16l)!
+
+SYNC
+BYTE: 0xB1 - Implies Version 2
+
+FRAME STRUCTURE
+Two zeros = one byte, so 00 | 00 = word (16 bit) and 00 | 00 | 00 24 bit word so 3 bytes:
+SYNC | INFO | nSamples *1  | DATA-LEN     | DATA*2 ----------------------->
+B1   | 00   | 00 | 00      | 00 | ?? | ?? | [BINARY COMPRESSED AUDIO DATA]
+
+*1 only when we need to set a block size
+*2: only when data available, the datatype varies between 1 and 3 bytes
+   On a silent frame it contains a double value after the info byte!
+   (BZIP2 = 8, LZMA = 16 and arithmetic = 24 bit) with the sample count.
+   In case compression is none, this frame is rejected!
+
+== INFO BYTE ==
+BIT 12 = data available? (see table)
+BIT 34 = compression type (see table)
+BIT 5  = channel config: 0=mono, 1=stereo
+BIT 6  = use last blocksize: 0=use given (*1 is written) 1=use last
+BIT 78 = sampling clock (see table)
+
+data address table
+00 0 = No data / silence
+01 1 = 8 bit data length addressing
+10 2 = 16 bit data length addressing
+11 3 = 24 bit data length addressing
+
+compression type table
+00 0 = none
+01 1 = BZIP2
+10 2 = LZMA
+11 3 = arithmetic order0
+
+sampling clock table:
+00 0 =  44100 Hz
+01 1 =  48000 Hz
+10 2 =  32000 Hz
+11 3 =  24000 Hz
