@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace BPCM.ADPCM
 {
-    struct State
+    public struct State
     {
         public object valprev;
         public object index;
@@ -13,19 +10,23 @@ namespace BPCM.ADPCM
 
     public interface IADPCM
     {
-        public State[] State;
-        public bool ChannelCoupling;
-        public double DecodingVolume;
+        public State[] State { get; set; }
+        public bool ChannelCoupling { get; set; }
+        public double DecodingVolume { get; set; }
+
         public byte[] Decode(byte[] buffer);
+
         public byte[] Encode(byte[] buffer);
     }
 
+#warning complete this
+
     public class IntelFourBit : IADPCM
     {
-        private State[] _state; public State[] State { get => _state; set => _state = value; }
-        private bool _cc; public bool ChannelCoupling { get => _cc; set => _cc = value; }
-        private double _vol; public double DecodingVolume { get => _vol; set => _vol = value; }
-        
+        public State[] State { get; set; }
+        public bool ChannelCoupling { get; set; }
+        public double DecodingVolume { get; set; }
+
         private short[] indexTable =
 {
             -1, -1, -1, -1, 2, 4, 6, 8,
@@ -47,20 +48,26 @@ namespace BPCM.ADPCM
 
         public IntelFourBit(int numChannels, bool channelCoupling = false)
         {
-            _state = new State[numChannels];
-            _cc = channelCoupling;
+            State = new State[numChannels];
+            ChannelCoupling = channelCoupling;
         }
 
         public byte[] Encode(byte[] buffer)
         {
-            long sample_align = _state.LongLength * 2;
+            long sample_align = State.LongLength * 2;
             long i, ch;
-            byte[] outBuff = new byte[_state.LongLength / 2];
+            byte[] outBuff = new byte[State.LongLength / 2];
 
-            for (i = 0; i<=buffer.LongLength-sample_align; i+=sample_align)
+            for (i = 0; i <= buffer.LongLength - sample_align; i += sample_align)
             {
-
             }
+
+            throw new NotImplementedException();
+        }
+
+        public byte[] Decode(byte[] buffer)
+        {
+            throw new NotImplementedException();
         }
     }
 }

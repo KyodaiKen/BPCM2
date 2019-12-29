@@ -1,18 +1,17 @@
-﻿using System;
-using System.Linq;
-using System.IO;
-using System.Diagnostics;
-using System.Reflection;
+﻿using BPCM.Easy;
 using NAudio.Wave;
-using System.Threading;
-using BPCM.Easy;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace BPCM
 {
-    class Program
+    internal class Program
     {
-        static int printUsage()
+        private static int printUsage()
         {
             Console.WriteLine("");
             Console.WriteLine(String.Concat(Enumerable.Repeat("-", 24)) + " Usage " + String.Concat(Enumerable.Repeat("-", 24)));
@@ -48,14 +47,14 @@ namespace BPCM
             return 0x7F;
         }
 
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en-us");
             Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-us");
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.TreatControlCAsInput = true;
 
-            string infile = "", outfile = "";
+            string infile = string.Empty, outfile = string.Empty;
             int blockSize = 100;
             short SilenceThreshold = 4;
             bool enableDithering = true;
@@ -67,6 +66,7 @@ namespace BPCM
             Compression.Algorithm compression = Compression.Algorithm.fast;
 
             #region Parse Parameters
+
             //Check for parameter for the analysis and output a JSON string into the console
             int i;
             bool analyze = false;
@@ -84,11 +84,15 @@ namespace BPCM
                     .OfType<AssemblyDescriptionAttribute>()
                     .FirstOrDefault();
 
-                titleAndVersionInfo = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name.ToUpper() + ": " + descriptionAttribute.Description + " version " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString() + " \"Feline\"";
+                string AssemblyName = assembly.GetName().Name.ToUpper();
+                string AssemblyVersion = assembly.GetName().Version.ToString();
+
+                titleAndVersionInfo = $"{AssemblyName}: {descriptionAttribute.Description} version {AssemblyVersion} \"Feline\"";
+
                 Console.WriteLine("");
                 oldCurTop = Console.CursorTop;
                 Console.WriteLine(titleAndVersionInfo);
-                Console.WriteLine(String.Concat(Enumerable.Repeat("\x2550", 80)));
+                Console.WriteLine(string.Concat(Enumerable.Repeat("\x2550", 80)));
                 if (args?.Length == 0) return printUsage();
             }
 
@@ -127,7 +131,7 @@ namespace BPCM
                     outfile = args[i];
             }
 
-            if(!enc)
+            if (!enc)
             {
                 //Extra parameters
                 for (i = 0; i < args.Length; i++)
@@ -137,10 +141,10 @@ namespace BPCM
             //If no output file was not given, launch player mode
             if (outfile == "" && infile != "" && (Path.GetExtension(infile).ToLower() == ".bpcm" || Path.GetExtension(infile).ToLower() == ".bpcm2"))
             {
-                if(analyze)
+                if (analyze)
                 {
                     Decoder.Info inf = Decoder.AnalyzeFile(infile);
-                    string JSON = 
+                    string JSON =
                        "{\"SamplingRate\":" + inf.SamplingRate + ","
                      + "\"NumberOfChannels\":" + inf.NumberOfChannels + ","
                      + "\"BitrateAvg\":" + inf.BitrateAvg + ","
@@ -171,7 +175,7 @@ namespace BPCM
                     }
                     JSON = JSON.Substring(0, JSON.Length - 1);
                     JSON = JSON + "},\"FrameLengthHistogram\":{";
-                    foreach (KeyValuePair<int,long> p in inf.FrameSampleCountHistogram)
+                    foreach (KeyValuePair<int, long> p in inf.FrameSampleCountHistogram)
                         JSON = string.Concat(new string[] { JSON, "\"", p.Key.ToString(), "\":", p.Value.ToString(), "," });
                     JSON = JSON.Substring(0, JSON.Length - 1);
                     JSON = JSON + "}}";
@@ -217,18 +221,23 @@ namespace BPCM
                             case "none":
                                 compression = Compression.Algorithm.none;
                                 break;
+
                             case "bzip2":
                                 compression = Compression.Algorithm.BZIP2;
                                 break;
+
                             case "lzma":
                                 compression = Compression.Algorithm.lzma;
                                 break;
+
                             case "ac":
                                 compression = Compression.Algorithm.arithmetic;
                                 break;
+
                             case "fast":
                                 compression = Compression.Algorithm.fast;
                                 break;
+
                             case "brute":
                             case "bruteforce":
                                 compression = Compression.Algorithm.bruteForce;
@@ -251,14 +260,16 @@ namespace BPCM
                     if (args[i] == "-sltrh" && i != args.Length - 1)
                         if (!short.TryParse(args[i + 1], out SilenceThreshold)) return printUsage();
             }
-            #endregion;
+
+            #endregion Parse Parameters
 
             if (infile == "" || outfile == "") return printUsage();
 
             TimeSpan e_start;
 
             //check wether encoding or decoding is requested
-            if (enc) {
+            if (enc)
+            {
                 Console.WriteLine("Encoding file:         " + infile);
                 Console.WriteLine("to:                    " + outfile);
                 Console.WriteLine("with block size:       " + blockSize.ToString());
@@ -268,18 +279,24 @@ namespace BPCM
 
                 e_start = TimeSpan.FromTicks(DateTime.Now.Ticks);
 
-                try {
+                try
+                {
                     Encoder.EncodeWaveFile(
                         infile
-                      , outfile, new Encoder.Parameters() {
-                            BlockSize = blockSize
-                          , Compression = compression
-                          , SilenceThreshold = SilenceThreshold
-                        }
+                      , outfile, new Encoder.Parameters()
+                      {
+                          BlockSize = blockSize
+                          ,
+                          Compression = compression
+                          ,
+                          SilenceThreshold = SilenceThreshold
+                      }
                       , updateStatus
                       , 1000 / 7.5
                     );
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Console.WriteLine("Error: " + e.Message);
                     return 127;
                 }
@@ -294,11 +311,14 @@ namespace BPCM
                     Console.Write(progress.PadRight(Console.WindowWidth - 1, Convert.ToChar(" ")));
                     Console.CursorLeft = 0;
                 }
-            } else {
+            }
+            else
+            {
                 e_start = TimeSpan.FromTicks(DateTime.Now.Ticks);
                 Decoder.DecodeBPCMFile(infile, outfile, updateStatus, 1000 / 7.5, true, initialized, enableDithering);
 
-                void initialized(Decoder.Info inf) {
+                void initialized(Decoder.Info inf)
+                {
                     Console.WriteLine("{0,-20} {1}", "Filename:", infile);
                     Console.WriteLine("{0,-20} {1}", "to:", outfile);
                     Console.WriteLine("{0,-20} {1}", "File size:", Helpers.ByteFormatter.FormatBytes(new FileInfo(infile).Length));
@@ -306,7 +326,8 @@ namespace BPCM
                     Console.WriteLine(String.Concat(Enumerable.Repeat("\x2509", 80)));
                 }
 
-                void updateStatus(Decoder.Status stts) {
+                void updateStatus(Decoder.Status stts)
+                {
                     Console.Write(("Decoding: " + stts.PositionString + " (" + stts.PercentageDone.ToString("F2") + "%)"
                                     + " at " + String.Format("{0:0.000}x speed.", stts.Position / (TimeSpan.FromTicks(DateTime.Now.Ticks) - e_start).TotalSeconds)).PadRight(Console.WindowWidth - 1, Convert.ToChar(" ")));
                     Console.CursorLeft = 0;
@@ -316,7 +337,7 @@ namespace BPCM
             return 0;
         }
 
-        static void printInfo(Decoder.Info inf)
+        private static void printInfo(Decoder.Info inf)
         {
             Console.WriteLine("{0,-20} {1}", "Compression:", inf.CompressionUsedString);
             Console.WriteLine("{0,-20} {1} Hz", "Sampling rate:", inf.SamplingRate);
@@ -332,7 +353,7 @@ namespace BPCM
             Console.WriteLine("{0,-20} {1}", "Duration:", inf.DurationString);
         }
 
-        static void printInfo(BitstreamReader.Stats s)
+        private static void printInfo(BitstreamReader.Stats s)
         {
             TimeSpan dur = TimeSpan.FromSeconds(s.Duration);
             Console.WriteLine("{0,-20} {1}", "Compression:", string.Join(", ", s.CompressionUsed.ToArray()));
@@ -349,8 +370,8 @@ namespace BPCM
             Console.WriteLine("{0,-20} {1}", "Number of frames:", s.FrameSet.Count);
             Console.WriteLine("{0,-20} {1:00}d {2:00}h {3:00}m {4:00}s {5:000.000}ms", "Duration:", dur.Days, dur.Hours, dur.Minutes, dur.Seconds, (s.Duration - Math.Floor(s.Duration)) * 1000);
         }
-        
-        static void play(string bpcmfile, float volume, double rate, int output_device = 0, bool enDither = true)
+
+        private static void play(string bpcmfile, float volume, double rate, int output_device = 0, bool enDither = true)
         {
             Console.WriteLine("{0,-20} {1}", "File path:", new FileInfo(bpcmfile).Directory.FullName);
             Console.WriteLine("{0,-20} {1}", "File name:", new FileInfo(bpcmfile).Name);
@@ -407,21 +428,20 @@ namespace BPCM
                  , strRateLine = String.Concat(Enumerable.Repeat(strFbL, 5))
                  , strVULine = String.Concat(Enumerable.Repeat(strFbL, 58))
                  , strVUScale = "-\x221e\x2508"
-                               +"-60"+string.Concat(Enumerable.Repeat("\x2508", 6))
-                               +"-50"+string.Concat(Enumerable.Repeat("\x2508", 6))
-                               +"-40"+string.Concat(Enumerable.Repeat("\x2508", 7))
-                               +"-30"+string.Concat(Enumerable.Repeat("\x2508", 6))
-                               +"-20"+string.Concat(Enumerable.Repeat("\x2508", 4))
-                               +"-12"+string.Concat(Enumerable.Repeat("\x2508", 2))
+                               + "-60" + string.Concat(Enumerable.Repeat("\x2508", 6))
+                               + "-50" + string.Concat(Enumerable.Repeat("\x2508", 6))
+                               + "-40" + string.Concat(Enumerable.Repeat("\x2508", 7))
+                               + "-30" + string.Concat(Enumerable.Repeat("\x2508", 6))
+                               + "-20" + string.Concat(Enumerable.Repeat("\x2508", 4))
+                               + "-12" + string.Concat(Enumerable.Repeat("\x2508", 2))
                                + "-6\x2508-3\x25080"
                  , strVUBlank = String.Concat(Enumerable.Repeat(" ", 58));
-
 
             void readDone(Frame CurrentFrame)
             {
                 currFrame = CurrentFrame.FrameNumber;
                 ADPCM.ADPCM4BIT.VolumeInfo vi = CurrentFrame.VolumeInfo;
-                
+
                 currTS = CurrentFrame.TimeStamp;
                 TimeSpan tsnPos = TimeSpan.FromSeconds(currTS);
                 int days = tsnPos.Days; if (days > 9) days = 9; //Clamp days never to be more than 9.
@@ -437,12 +457,12 @@ namespace BPCM
                 const int max = 57, lowpoint = 62; //lowpoint is the positive value of the minus dB the scale will start
                 int L = (int)Math.Round(((vi.dbPeakL + lowpoint) / lowpoint) * max);
                 if (L < 0) L = 0; //clamp
-                
+
                 int R = (int)Math.Round(((vi.dbPeakR + lowpoint) / lowpoint) * max);
                 if (R < 0) R = 0; //clamp
 
-                string strVUMeterL = arrVU[0,1]+String.Concat(Enumerable.Repeat(arrVU[0,1], L)) + String.Concat(Enumerable.Repeat(arrVU[0,0], max - L));
-                string strVUMeterR = arrVU[1,1]+String.Concat(Enumerable.Repeat(arrVU[1,1], R)) + String.Concat(Enumerable.Repeat(arrVU[1,0], max - R));
+                string strVUMeterL = arrVU[0, 1] + String.Concat(Enumerable.Repeat(arrVU[0, 1], L)) + String.Concat(Enumerable.Repeat(arrVU[0, 0], max - L));
+                string strVUMeterR = arrVU[1, 1] + String.Concat(Enumerable.Repeat(arrVU[1, 1], R)) + String.Concat(Enumerable.Repeat(arrVU[1, 0], max - R));
 
                 Console.CursorLeft = 0;
                 Console.CursorTop += 2;
@@ -455,7 +475,7 @@ namespace BPCM
                 Console.CursorLeft = 0;
                 Console.CursorTop -= 5;
             }
-            
+
             void woutInit()
             {
                 wavOut = new WaveOutEvent();
@@ -475,10 +495,11 @@ namespace BPCM
 
             void changeRate()
             {
-                if(WaveOut.GetCapabilities(wavOut.DeviceNumber).SupportsPlaybackRateControl && 1==2)
+                if (WaveOut.GetCapabilities(wavOut.DeviceNumber).SupportsPlaybackRateControl && 1 == 2)
                 {
                     wavOut.Rate = (float)speed;
-                } else
+                }
+                else
                 {
                     reinitBPCMWaveSrc();
                 }
@@ -515,7 +536,7 @@ namespace BPCM
             void stopped(object sender, StoppedEventArgs e) { if (!dontExit) exitNow(); else dontExit = false; }
 
             //Drawing status box
-            Console.WriteLine("{0,-20} {1}","Playing on:", DeviceName);
+            Console.WriteLine("{0,-20} {1}", "Playing on:", DeviceName);
             Console.WriteLine("");
 
             //Upper corner of box
@@ -544,9 +565,7 @@ namespace BPCM
             Console.WriteLine("Speed:   S, D and F. You'll figure it out. ;) You can also use CTRL!");
 
             //Set cursor top position to the status line.
-            Console.CursorTop-=10;
-
-
+            Console.CursorTop -= 10;
 
             bool exit = false;
 
@@ -559,9 +578,9 @@ namespace BPCM
                     Console.CursorVisible = true;
                     wavOut?.Dispose();
                     p = null;
-                } catch
+                }
+                catch
                 {
-
                 }
                 Environment.Exit(0);
             }
@@ -570,7 +589,7 @@ namespace BPCM
             wavOut.Play();
 
             //Crude key scanning
-            while(!exit)
+            while (!exit)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
                 switch (key.Modifiers)
@@ -582,28 +601,34 @@ namespace BPCM
                             case ConsoleKey.VolumeUp:
                                 if (wavOut.Volume + 0.001f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.001f;
                                 break;
+
                             case ConsoleKey.DownArrow:
                             case ConsoleKey.VolumeDown:
                                 if (wavOut.Volume - 0.001f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.001f;
                                 break;
+
                             case ConsoleKey.LeftArrow:
                                 p.Seek(currTS - 1);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.RightArrow:
                                 p.Seek(currTS + 1);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.S:
                                 if (speed - 0.01 <= 0.01f) speed = 0.01; else speed -= 0.01;
                                 changeRate();
                                 break;
+
                             case ConsoleKey.F:
                                 if (speed + 0.01 >= 4.0f) speed = 4.0; else speed += 0.01;
                                 changeRate();
                                 break;
                         }
                         break;
+
                     default:
                         switch (key.Key)
                         {
@@ -611,90 +636,112 @@ namespace BPCM
                             case ConsoleKey.VolumeUp:
                                 if (wavOut.Volume + 0.01f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.01f;
                                 break;
+
                             case ConsoleKey.DownArrow:
                             case ConsoleKey.VolumeDown:
                                 if (wavOut.Volume - 0.01f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.01f;
                                 break;
+
                             case ConsoleKey.PageUp:
                                 if (wavOut.Volume + 0.1f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.1f;
                                 break;
+
                             case ConsoleKey.PageDown:
                                 if (wavOut.Volume - 0.1f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.1f;
                                 break;
+
                             case ConsoleKey.LeftArrow:
                                 p.Seek(currTS - 5d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.RightArrow:
                                 p.Seek(currTS + 5d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D1:
                                 p.Seek(60d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D2:
                                 p.Seek(120d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D3:
                                 p.Seek(180d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D4:
                                 p.Seek(240d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D5:
                                 p.Seek(300d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D6:
                                 p.Seek(360d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D7:
                                 p.Seek(420d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D8:
                                 p.Seek(480d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D9:
                                 p.Seek(540d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.D0:
                                 p.Seek(600d);
                                 bpcmWP.DropRingBuffer();
                                 break;
+
                             case ConsoleKey.S:
                                 if (speed - 0.1 <= 0.01f) speed = 0.01; else speed -= 0.1;
                                 changeRate();
                                 break;
+
                             case ConsoleKey.D:
                                 speed = 1f;
                                 changeRate();
                                 break;
+
                             case ConsoleKey.F:
                                 if (speed + 0.1 >= 4.0f) speed = 4.0; else speed += 0.1;
                                 changeRate();
                                 break;
+
                             case ConsoleKey.Home:
                                 p.Seek(0);
                                 break;
+
                             case ConsoleKey.Spacebar:
                                 switch (wavOut.PlaybackState)
                                 {
                                     case PlaybackState.Playing:
                                         wavOut.Pause();
                                         break;
+
                                     case PlaybackState.Paused:
                                         wavOut.Play();
                                         break;
                                 }
                                 break;
+
                             case ConsoleKey.Escape:
                             case ConsoleKey.Q:
                                 Console.CursorTop -= 10;

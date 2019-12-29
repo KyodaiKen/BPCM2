@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Ionic.BZip2;
+using SevenZip.Compression.LZMA;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using SevenZip.Compression.LZMA;
-using Ionic.BZip2;
 
 namespace BPCM
 {
     public class Compression
     {
-        public struct Entropy {
+        public struct Entropy
+        {
             public double entropy;
             public ulong minsize;
         }
@@ -28,10 +29,10 @@ namespace BPCM
             fast = 4,
             bruteForce = 10
         }
-        
+
         private static byte[] internalCompress(byte[] data, InfoByte.CompressionType algo = InfoByte.CompressionType.Arithmetic)
         {
-            byte[] dataCompr = new byte[0];
+            byte[] dataCompr = Array.Empty<byte>();
 
             switch (algo)
             {
@@ -41,25 +42,26 @@ namespace BPCM
                     break;
 
                 case InfoByte.CompressionType.BZIP2:
-                        using (MemoryStream msOut = new MemoryStream())
+                    using (MemoryStream msOut = new MemoryStream())
+                    {
+                        msOut.Write(BitConverter.GetBytes(data.Length), 0, 4);
+                        using (ParallelBZip2OutputStream c = new ParallelBZip2OutputStream(msOut, 9, true))
                         {
-                            msOut.Write(BitConverter.GetBytes(data.Length), 0, 4);
-                            using (ParallelBZip2OutputStream c = new ParallelBZip2OutputStream(msOut, 9,true))
-                            {
-                                c.MaxWorkers = 4;
-                                c.Write(data,0,data.Length);
-                                c.Flush();
-                                c.Close();
-                                msOut.Flush();
-                                dataCompr = msOut.ToArray();
-                            }
+                            c.MaxWorkers = 4;
+                            c.Write(data, 0, data.Length);
+                            c.Flush();
+                            c.Close();
+                            msOut.Flush();
+                            dataCompr = msOut.ToArray();
                         }
+                    }
                     break;
 
                 case InfoByte.CompressionType.Arithmetic:
                     AbstractModel ac = new ModelOrder0();
                     //data = threeRLEencode(data);
-                    using (MemoryStream mcCompr = new MemoryStream()) {
+                    using (MemoryStream mcCompr = new MemoryStream())
+                    {
                         ac.Process(new MemoryStream(data), mcCompr, ModeE.MODE_ENCODE);
                         mcCompr.Flush();
                         dataCompr = mcCompr.ToArray();
@@ -89,17 +91,17 @@ namespace BPCM
                     cadd.usedAlgo = InfoByte.CompressionType.BZIP2;
                     clist.Add(cadd);
                 }
-                
+
                 cadd = new Compressed();
                 cadd.data = internalCompress(data, InfoByte.CompressionType.LZMA);
                 cadd.usedAlgo = InfoByte.CompressionType.LZMA;
                 clist.Add(cadd);
 
-
                 int smallest = int.MaxValue;
                 foreach (Compressed c in clist)
                 {
-                    if (smallest > c.data.Length) {
+                    if (smallest > c.data.Length)
+                    {
                         smallest = c.data.Length;
                         cret = c;
                     }
@@ -138,6 +140,7 @@ namespace BPCM
                             }
                         }
                         break;
+
                     case InfoByte.CompressionType.BZIP2:
                         using (MemoryStream msOut = new MemoryStream(data))
                         {
@@ -151,13 +154,15 @@ namespace BPCM
                             }
                         }
                         break;
+
                     case InfoByte.CompressionType.LZMA:
                         return SevenZipHelper.Decompress(data);
+
                     case InfoByte.CompressionType.None:
                         return data;
                 }
             }
-            catch {}
+            catch { }
             return dcd;
         }
     }
