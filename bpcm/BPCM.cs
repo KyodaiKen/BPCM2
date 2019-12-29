@@ -56,13 +56,13 @@ namespace BPCM.Easy
                 if (Parameters.BlockSize < 10) Parameters.BlockSize = 10;
                 if (Parameters.BlockSize > 1000) Parameters.BlockSize = 1000;
                 //Check if wFormatTag is 1 (PCM signed integer) and if not, crash!
-                if (w.Info.fmtHeader.wFormatTag != 1) throw new Exception("BPCM 2.0 only supports PCM integer input (wFormatTag = 0x1)");
+                if (w.Info.fmtHeader.wFormatTag != 1) throw new Exception("BPCM 2.x only supports PCM integer input (wFormatTag = 0x1)");
                 //Check if bits per sample is 16, if not crash!
-                if (w.Info.fmtHeader.nBitsPerSample != 16) throw new Exception("BPCM 2.0 only supports 16 bit signed short integer input");
+                if (w.Info.fmtHeader.nBitsPerSample != 16) throw new Exception("BPCM 2.x only supports 16 bit signed short integer input");
                 //Check if sampling rate is supported
-                if (!new uint[] { 48000, 44100, 32000, 24000 }.Contains(w.Info.fmtHeader.nSamplesPerSec)) throw new Exception("BPCM 2.0 only supports the sampling rates 48000, 44100, 32000 and 24000 Hz.");
+                if (!new uint[] { 48000, 44100, 32000, 24000 }.Contains(w.Info.fmtHeader.nSamplesPerSec)) throw new Exception("BPCM 2.x only supports the sampling rates 48000, 44100, 32000 and 24000 Hz.");
                 //Check number of channels to be either mono or stereo
-                if (!new ushort[] { 1, 2 }.Contains(w.Info.fmtHeader.nChannels)) throw new Exception("BPCM 2.0 only supports mono or stereo source wave files.");
+                if (!new ushort[] { 1, 2 }.Contains(w.Info.fmtHeader.nChannels)) throw new Exception("BPCM 2.x only supports mono or stereo source wave files.");
 
                 if (Parameters.SilenceThreshold == 0) Parameters.SilenceThreshold = 4;
 
