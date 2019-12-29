@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>BPCM_CLI</AssemblyName>
+    <UseWpf>true</UseWpf>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <StartupObject></StartupObject>
+    <Description>Entropy encoded ADPCM audio codec</Description>
+    <Company>Kyodai Ken</Company>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <Copyright>Copyright © Kyodai Ken 2019</Copyright>
+    <Authors>Kyodai Ken</Authors>
+    <Version>2.1.0.1</Version>
+    <PackageId>BPCM2</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BPCM\BPCM.csproj" />
+  </ItemGroup>
+
+</Project>

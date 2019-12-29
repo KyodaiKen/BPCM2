@@ -1,40 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>BPCM2</AssemblyName>
-	<UseWpf>true</UseWpf>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
-    <StartupObject>BPCM.Program</StartupObject>
-    <Description>Entropy encoded ADPCM audio codec</Description>
-    <Company>Kyodai Ken</Company>
-    <PackageLicenseExpression></PackageLicenseExpression>
-    <Copyright>Copyright © Kyodai Ken 2019</Copyright>
-    <Authors>Kyodai Ken</Authors>
-    <Version>2.1.0.1</Version>
-    <PackageId>BPCM2</PackageId>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>embedded</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Windows.Forms" />
+    <ProjectReference Include="..\Compressors\Compressors.csproj" />
+    <ProjectReference Include="..\NAudioLitle\NAudioLitle.csproj" />
+    <ProjectReference Include="..\PCM\Pcm.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.0" />
-	<None Include="src\BPCM\ADPCM\ADPCM.cs" />
-    <None Include="app.config" />
-    <None Include="src\BPCM\Compressors\lzma\Common\CommandLineParser.cs" />
-    <None Include="src\BPCM\Playback\NAudioLite\Wave\MmeInterop\Manufacturers.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="icon.ico" />
-  </ItemGroup>
+
 </Project>
