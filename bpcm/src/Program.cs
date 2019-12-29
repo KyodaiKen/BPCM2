@@ -43,7 +43,8 @@ namespace BPCM
             Console.WriteLine("= Encoding =");
             Console.WriteLine("-sltrh number    Sets the silence threshold from 0 ... 32747 (integer). Default is 4");
             Console.WriteLine("= Decoding / Playback =");
-            Console.WriteLine("-nodither        Disables random dithering on decoding, makes decoding faster");
+            Console.WriteLine("-dither          Enables random dithering on decoding, makes decoding slower and produces");
+            Console.WriteLine("                 a different decoding result on each run.");
             return 0x7F;
         }
 
@@ -57,7 +58,7 @@ namespace BPCM
             string infile = string.Empty, outfile = string.Empty;
             int blockSize = 100;
             short SilenceThreshold = 4;
-            bool enableDithering = true;
+            bool enableDithering = false;
             bool enc = false;
 
             int oldCurTop = 0;
@@ -135,7 +136,7 @@ namespace BPCM
             {
                 //Extra parameters
                 for (i = 0; i < args.Length; i++)
-                    if (args[i] == "-nodither") enableDithering = false;
+                    if (args[i] == "-dither") enableDithering = true;
             }
 
             //If no output file was not given, launch player mode

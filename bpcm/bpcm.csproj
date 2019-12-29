@@ -7,13 +7,13 @@
 	<UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <StartupObject />
+    <StartupObject>BPCM.Program</StartupObject>
     <Description>Entropy encoded ADPCM audio codec</Description>
     <Company>Kyodai Ken</Company>
     <PackageLicenseExpression></PackageLicenseExpression>
     <Copyright>Copyright © Kyodai Ken 2019</Copyright>
     <Authors>Kyodai Ken</Authors>
-    <Version>2.1.0.0</Version>
+    <Version>2.1.0.1</Version>
     <PackageId>BPCM2</PackageId>
   </PropertyGroup>
   <ItemGroup>
