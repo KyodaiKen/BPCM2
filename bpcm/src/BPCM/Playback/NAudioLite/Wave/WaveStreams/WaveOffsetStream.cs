@@ -34,14 +34,13 @@ namespace NAudio.Wave
                 throw new ArgumentException("Only PCM supported");
             // TODO: add support for IEEE float + perhaps some others -
             // anything with a fixed bytes per sample
-            
+
             this.sourceStream = sourceStream;
             position = 0;
             bytesPerSample = (sourceStream.WaveFormat.BitsPerSample / 8) * sourceStream.WaveFormat.Channels;
             this.StartTime = startTime;
             this.SourceOffset = sourceOffset;
             this.SourceLength = sourceLength;
-            
         }
 
         /// <summary>
@@ -59,11 +58,11 @@ namespace NAudio.Wave
         /// </summary>
         public TimeSpan StartTime
         {
-            get 
-            { 
-                return startTime; 
+            get
+            {
+                return startTime;
             }
-            set 
+            set
             {
                 lock (lockObject)
                 {
@@ -117,7 +116,6 @@ namespace NAudio.Wave
                     Position = Position;
                 }
             }
-    
         }
 
         /// <summary>
@@ -187,7 +185,7 @@ namespace NAudio.Wave
                 }
                 if (bytesWritten < numBytes)
                 {
-                    // don't read too far into source stream                
+                    // don't read too far into source stream
                     int sourceBytesRequired = (int)Math.Min(
                         numBytes - bytesWritten,
                         sourceLengthBytes + sourceOffsetBytes - sourceStream.Position);

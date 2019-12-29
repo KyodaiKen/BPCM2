@@ -79,19 +79,16 @@
 // by multiple distinct threads, for different blocks of data.
 //
 
-
-using System;
 using System.IO;
 
 namespace Ionic.BZip2
 {
-
     internal class BitWriter
     {
-        uint accumulator;
-        int nAccumulatedBits;
-        Stream output;
-        int totalBytesWrittenOut;
+        private uint accumulator;
+        private int nAccumulatedBits;
+        private Stream output;
+        private int totalBytesWrittenOut;
 
         public BitWriter(Stream s)
         {
@@ -111,7 +108,7 @@ namespace Ionic.BZip2
         {
             get
             {
-                return (byte) (this.accumulator >> (32 - this.nAccumulatedBits) & 0xff);
+                return (byte)(this.accumulator >> (32 - this.nAccumulatedBits) & 0xff);
             }
         }
 
@@ -166,7 +163,7 @@ namespace Ionic.BZip2
 
             while (nAccumulated >= 8)
             {
-                this.output.WriteByte ((byte)(u >> 24 & 0xff));
+                this.output.WriteByte((byte)(u >> 24 & 0xff));
                 this.totalBytesWrittenOut++;
                 u <<= 8;
                 nAccumulated -= 8;
@@ -182,7 +179,6 @@ namespace Ionic.BZip2
             // At this point the accumulator may contain up to 31 bits waiting for
             // output.
         }
-
 
         /// <summary>
         ///   Write a full 8-bit byte into the output.
@@ -222,9 +218,8 @@ namespace Ionic.BZip2
         /// </remarks>
         public void Flush()
         {
-            WriteBits(0,0);
+            WriteBits(0, 0);
         }
-
 
         /// <summary>
         ///   Writes all available bytes, and emits padding for the final byte as
@@ -242,7 +237,5 @@ namespace Ionic.BZip2
                 this.totalBytesWrittenOut++;
             }
         }
-
     }
-
 }

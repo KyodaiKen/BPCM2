@@ -3,37 +3,35 @@ using System.IO;
 
 namespace BPCM.PCMContainers.RIFFWave
 {
-
     public struct WAVEFormat
     {
         public ushort wFormatTag;
         public ushort nChannels;
-        public uint   nSamplesPerSec;
-        public uint   nAvgBytesPerSeconds;
+        public uint nSamplesPerSec;
+        public uint nAvgBytesPerSeconds;
         public ushort nBlockAlign;
         public ushort nBitsPerSample;
     }
 
-    class WAVEReader
+    internal class WAVEReader
     {
-        
         public struct WAVEInfo
         {
-            public uint         RIFFChunkSize;
-            public uint         fmtChunkSize;
-            public uint         PCMDataOffset;
-            public uint         PCMDataLength;
-            public WAVEFormat   fmtHeader;
-            public TimeSpan     Duration        { get { return TimeSpan.FromSeconds(PCMDataLength / (double)(fmtHeader.nSamplesPerSec * fmtHeader.nChannels * (fmtHeader.nBitsPerSample / 8))); } }
+            public uint RIFFChunkSize;
+            public uint fmtChunkSize;
+            public uint PCMDataOffset;
+            public uint PCMDataLength;
+            public WAVEFormat fmtHeader;
+            public TimeSpan Duration { get { return TimeSpan.FromSeconds(PCMDataLength / (double)(fmtHeader.nSamplesPerSec * fmtHeader.nChannels * (fmtHeader.nBitsPerSample / 8))); } }
         }
 
-        private Stream          s;
-        private WAVEInfo        wi;
-        private bool            initialized;
+        private Stream s;
+        private WAVEInfo wi;
+        private bool initialized;
 
-        public WAVEInfo         Info            { get { return this.wi; } }
-        public long             Position        { get { return this.s.Position; } }
-        public long             PCMPosition     { get { return this.s.Position - this.wi.PCMDataOffset; } }
+        public WAVEInfo Info { get { return this.wi; } }
+        public long Position { get { return this.s.Position; } }
+        public long PCMPosition { get { return this.s.Position - this.wi.PCMDataOffset; } }
 
         public WAVEReader(Stream s)
         {
@@ -44,7 +42,7 @@ namespace BPCM.PCMContainers.RIFFWave
             if (br.ReadUInt32() != 1179011410u) throw new Exception("WAVEReader: RIFF header missing!");
 
             this.wi.RIFFChunkSize = br.ReadUInt32();
-            
+
             if (this.wi.RIFFChunkSize > this.s.Length) Console.WriteLine("WAVEReader: WARNING! RIFF chunk is actually larger than the available Data!");
 
             //Check RIFF type
@@ -52,7 +50,8 @@ namespace BPCM.PCMContainers.RIFFWave
 
             //Find 'fmt ' chunk
             bool found = false;
-            while ((this.s.Position <= this.s.Length) && found == false) {
+            while ((this.s.Position <= this.s.Length) && found == false)
+            {
                 if (br.ReadUInt32() != 544501094u) this.s.Position -= 3; else { found = true; break; }
             }
 
@@ -80,9 +79,13 @@ namespace BPCM.PCMContainers.RIFFWave
             {
                 Console.WriteLine("WAVEReader: WARNING! Data chunk is smaller than the stream!");
                 Console.WriteLine("WAVEReader: Assuming data chunk size to be correct.");
-            } else if (this.wi.PCMDataLength == (uint)this.s.Length - this.wi.PCMDataOffset) {
+            }
+            else if (this.wi.PCMDataLength == (uint)this.s.Length - this.wi.PCMDataOffset)
+            {
                 //Nothing to do here, everything is fine
-            } else {
+            }
+            else
+            {
                 Console.WriteLine("WAVEReader: WARNING! Data chunk is bigger than the stream!");
                 this.wi.PCMDataLength = (uint)this.s.Length - this.wi.PCMDataOffset;
                 Console.WriteLine("WAVEReader: Data chunk size was corrected.");
@@ -114,19 +117,23 @@ namespace BPCM.PCMContainers.RIFFWave
             {
                 case 1:
                 case 0xFFFE:
-                    switch (wi.fmtHeader.nBitsPerSample) {
+                    switch (wi.fmtHeader.nBitsPerSample)
+                    {
                         case 8:
                             buffer = Array.CreateInstance(typeof(byte), length, wi.fmtHeader.nChannels - 1);
                             break;
+
                         case 16:
                             buffer = Array.CreateInstance(typeof(short), length, wi.fmtHeader.nChannels - 1);
                             break;
+
                         case 24:
                         case 32:
                             buffer = Array.CreateInstance(typeof(int), length, wi.fmtHeader.nChannels - 1);
                             break;
                     }
                     break;
+
                 default:
                     return false;
             }
@@ -136,16 +143,16 @@ namespace BPCM.PCMContainers.RIFFWave
     }
 
     //Crude but very simple wave writer
-    class WAVEWriter
+    internal class WAVEWriter
     {
-        private Stream            s;
-        private WAVEFormat        wf;
-        private bool              initialized;
-        private bool              finalized;
+        private Stream s;
+        private WAVEFormat wf;
+        private bool initialized;
+        private bool finalized;
 
-        public WAVEFormat         fmtHeader { get { return wf; } }
-        public long               Position { get { return s.Position; } }
-        public long               PCMPosition { get { return s.Position - 44; } }
+        public WAVEFormat fmtHeader { get { return wf; } }
+        public long Position { get { return s.Position; } }
+        public long PCMPosition { get { return s.Position - 44; } }
 
         public WAVEWriter(Stream s, WAVEFormat FMTHeader)
         {

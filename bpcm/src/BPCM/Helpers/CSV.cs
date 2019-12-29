@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace BPCM
 {
-    class CSV
+    internal class CSV
     {
         private List<string> m_columns { get; set; }
         private StreamWriter m_textw;

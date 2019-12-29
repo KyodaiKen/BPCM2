@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NAudio.Wave
+﻿namespace NAudio.Wave
 {
     /// <summary>
     /// Playback State
@@ -13,10 +9,12 @@ namespace NAudio.Wave
         /// Stopped
         /// </summary>
         Stopped,
+
         /// <summary>
         /// Playing
         /// </summary>
         Playing,
+
         /// <summary>
         /// Paused
         /// </summary>

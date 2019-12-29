@@ -1,10 +1,9 @@
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace NAudio.Wave 
+namespace NAudio.Wave
 {
     /// <summary>
     /// Represents a wave out device
@@ -71,7 +70,6 @@ namespace NAudio.Wave
         /// </summary>
         public int DeviceNumber { get; set; }
 
-
         /// <summary>
         /// Creates a default WaveOut device
         /// Will use window callbacks if called from a GUI thread, otherwise function
@@ -89,7 +87,6 @@ namespace NAudio.Wave
         public WaveOut(IntPtr windowHandle)
             : this(WaveCallbackInfo.ExistingWindow(windowHandle))
         {
-
         }
 
         /// <summary>
@@ -116,7 +113,7 @@ namespace NAudio.Wave
         public void Init(IWaveProvider waveProvider)
         {
             this.waveStream = waveProvider;
-            int bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize((DesiredLatency + NumberOfBuffers - 1) / NumberOfBuffers);            
+            int bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize((DesiredLatency + NumberOfBuffers - 1) / NumberOfBuffers);
 
             MmResult result;
             lock (waveOutLock)
@@ -223,11 +220,10 @@ namespace NAudio.Wave
         {
             if (playbackState != PlaybackState.Stopped)
             {
-
                 // in the call to waveOutReset with function callbacks
                 // some drivers will block here until OnDone is called
                 // for every buffer
-                playbackState = PlaybackState.Stopped; // set this here to avoid a problem with some drivers whereby 
+                playbackState = PlaybackState.Stopped; // set this here to avoid a problem with some drivers whereby
                 MmResult result;
                 lock (waveOutLock)
                 {
@@ -294,7 +290,7 @@ namespace NAudio.Wave
             {
                 return volume;
             }
-            set 
+            set
             {
                 SetWaveOutVolume(value, hWaveOut, waveOutLock);
                 volume = value;
@@ -308,7 +304,7 @@ namespace NAudio.Wave
             float left = value;
             float right = value;
 
-            int stereoVolume = (int) (left*0xFFFF) + ((int) (right*0xFFFF) << 16);
+            int stereoVolume = (int)(left * 0xFFFF) + ((int)(right * 0xFFFF) << 16);
             MmResult result;
             lock (lockObject)
             {
@@ -323,7 +319,7 @@ namespace NAudio.Wave
             if (value < 0) throw new ArgumentOutOfRangeException("value", "Rate must be between 0.0 and 4.0");
             if (value > 4) throw new ArgumentOutOfRangeException("value", "Rate must be between 0.0 and 4.0");
             ushort hi = (ushort)Math.Floor(value);
-            ushort lo = (ushort)Math.Round(0xFFFF*(value-Math.Floor(value)), 0);
+            ushort lo = (ushort)Math.Round(0xFFFF * (value - Math.Floor(value)), 0);
 
             int rateValue = lo + (hi << 16);
             //Debug.WriteLine("lo=" + lo.ToString() + " hi=" + hi.ToString() + " rateValue=" + rateValue.ToString("X"));
@@ -405,7 +401,7 @@ namespace NAudio.Wave
             Dispose(false);
         }
 
-        #endregion
+        #endregion Dispose Pattern
 
         // made non-static so that playing can be stopped here
         private void Callback(IntPtr hWaveOut, WaveInterop.WaveMessage uMsg, IntPtr dwInstance, WaveHeader wavhdr, IntPtr dwReserved)
@@ -422,9 +418,9 @@ namespace NAudio.Wave
                     // to avoid deadlocks in Function callback mode,
                     // we lock round this whole thing, which will include the
                     // reading from the stream.
-                    // this protects us from calling waveOutReset on another 
+                    // this protects us from calling waveOutReset on another
                     // thread while a WaveOutWrite is in progress
-                    lock (waveOutLock) 
+                    lock (waveOutLock)
                     {
                         try
                         {

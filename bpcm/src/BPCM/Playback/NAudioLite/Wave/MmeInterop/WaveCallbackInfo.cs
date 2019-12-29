@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NAudio.Wave
 {
@@ -13,6 +11,7 @@ namespace NAudio.Wave
         /// Callback Strategy
         /// </summary>
         public WaveCallbackStrategy Strategy { get; private set; }
+
         /// <summary>
         /// Window Handle (if applicable)
         /// </summary>

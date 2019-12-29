@@ -2,29 +2,30 @@
 
 namespace BPCM.ADPCM
 {
-    class ADPCM4BIT_MONO
+    internal class ADPCM4BIT_MONO
     {
         /* Intel ADPCM4BIT step variation table */
+
         private short[] indexTable =
         {
-	        -1, -1, -1, -1, 2, 4, 6, 8,
-	        -1, -1, -1, -1, 2, 4, 6, 8,
+            -1, -1, -1, -1, 2, 4, 6, 8,
+            -1, -1, -1, -1, 2, 4, 6, 8,
         };
 
         private short[] stepsizeTable =
         {
-	        7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
-	        19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-	        50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
-	        130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
-	        337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-	        876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
-	        2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
-	        5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-	        15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
+            7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
+            19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
+            50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
+            130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
+            337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
+            876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
+            2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
+            5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
+            15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
         };
 
-        struct StateMono
+        private struct StateMono
         {
             public short valprev;
             public byte index;
@@ -46,20 +47,19 @@ namespace BPCM.ADPCM
 
             int sign;           // Current adpcm sign bit
             int delta;          // Current adpcm output value
-            int step;           // Stepsize 
-            int valprev;        // virtual previous output value 
+            int step;           // Stepsize
+            int valprev;        // virtual previous output value
             int vpdiff;         // Current change to valprev
-            int index;          // Current step change index 
+            int index;          // Current step change index
             byte bitbuffer = 0; // place to keep previous 4-bit value
 
             valprev = this.s.valprev;
             index = this.s.index;
-            
+
             step = stepsizeTable[index];
-            
+
             for (i = 0; i <= pcmIn.Length - 4; i += 4)
             {
-
                 s = BitConverter.ToInt16(pcmIn, (int)i);
 
                 //**** Step 1 - compute difference with previous value
@@ -124,7 +124,7 @@ namespace BPCM.ADPCM
                 if (index < 0) index = 0;
                 if (index > 88) index = 88;
                 step = stepsizeTable[index];
-                
+
                 //**** Step 6 - Writing values into the array
                 Output[i / 4 + 3] = (byte)(delta | bitbuffer);
             }
@@ -157,8 +157,8 @@ namespace BPCM.ADPCM
             int index;      // Current step change index Mid
             int bitbuffer;  // place to keep next 4-bit value
 
-            uint pv=0; //peak volume
-            uint av=0; //average volume
+            uint pv = 0; //peak volume
+            uint av = 0; //average volume
             vi = new ADPCM4BIT.VolumeInfo();
             vi.dbPeakL = double.NegativeInfinity;
             vi.dbPeakR = double.NegativeInfinity;
@@ -167,7 +167,6 @@ namespace BPCM.ADPCM
 
             try
             {
-
                 valprev = BitConverter.ToInt16(adpcmIn, 0);
 
                 index = adpcmIn[2];
@@ -275,7 +274,7 @@ namespace BPCM.ADPCM
 
                     if (t < Int16.MinValue) t = Int16.MinValue;
                     if (t > Int16.MaxValue) t = Int16.MaxValue;
-                                        
+
                     BitConverter.GetBytes((short)t).CopyTo(Output, pO + 2);
                 }
 
@@ -286,9 +285,8 @@ namespace BPCM.ADPCM
                     vi.dbAvgL = 20 * Math.Log10((double)av / short.MaxValue);
                     vi.dbAvgR = 20 * Math.Log10((double)av / short.MaxValue);
                 }
-
             }
-            catch {  }
+            catch { }
             return Output;
         }
     }

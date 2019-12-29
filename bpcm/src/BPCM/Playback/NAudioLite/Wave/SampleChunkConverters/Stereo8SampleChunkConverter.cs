@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NAudio.Utils;
+﻿using NAudio.Utils;
 
 namespace NAudio.Wave.SampleProviders
 {
-    class Stereo8SampleChunkConverter : ISampleChunkConverter
+    internal class Stereo8SampleChunkConverter : ISampleChunkConverter
     {
         private int offset;
         private byte[] sourceBuffer;

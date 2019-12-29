@@ -1,46 +1,47 @@
-﻿using System;
-using System.Linq;
-using System.IO;
-using System.Diagnostics;
+﻿using BPCM.ADPCM;
 using BPCM.PCMContainers.RIFFWave;
-using BPCM.ADPCM;
 using NAudio.Wave;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace BPCM.Easy
 {
-    static class Encoder
+    internal static class Encoder
     {
         public struct Status
         {
-            public int                      FramesEncoded;
-            public int                      AvgBitrate;
-            public double                   Position;
-            public long                     PositionSamples;
-            public string                   PositionString;
-            public double                   Duration;
-            public long                     DurationSamples;
-            public long                     BytesWritten;
+            public int FramesEncoded;
+            public int AvgBitrate;
+            public double Position;
+            public long PositionSamples;
+            public string PositionString;
+            public double Duration;
+            public long DurationSamples;
+            public long BytesWritten;
         }
 
         public struct Stats
         {
-            public int                      FrameNumber;
-            public double                   TimeStamp;
-            public double                   FrameDuration;
-            public int                      Bytes;
-            public int                      Bitrate;
-            public Compression.Algorithm    Compression;
+            public int FrameNumber;
+            public double TimeStamp;
+            public double FrameDuration;
+            public int Bytes;
+            public int Bitrate;
+            public Compression.Algorithm Compression;
         }
 
         public struct Parameters
         {
-            public int                      BlockSize;
-            public Compression.Algorithm    Compression;
-            public short                    SilenceThreshold;
+            public int BlockSize;
+            public Compression.Algorithm Compression;
+            public short SilenceThreshold;
         }
 
         public delegate void dgUpdate(Status status);
+
         public delegate void dgFrameEncoded(Stats stats);
 
         public static void EncodeWaveFile(string WaveIn, string BPCMOut, Parameters Parameters, dgUpdate StatusCallback = null, double UpdateInterval = 250, dgFrameEncoded FrameEncodedCallback = null)
@@ -57,9 +58,9 @@ namespace BPCM.Easy
                 //Check if bits per sample is 16, if not crash!
                 if (w.Info.fmtHeader.nBitsPerSample != 16) throw new Exception("BPCM 2.0 only supports 16 bit signed short integer input");
                 //Check if sampling rate is supported
-                if (!new uint[] {48000,44100,32000,24000}.Contains(w.Info.fmtHeader.nSamplesPerSec)) throw new Exception("BPCM 2.0 only supports the sampling rates 48000, 44100, 32000 and 24000 Hz.");
+                if (!new uint[] { 48000, 44100, 32000, 24000 }.Contains(w.Info.fmtHeader.nSamplesPerSec)) throw new Exception("BPCM 2.0 only supports the sampling rates 48000, 44100, 32000 and 24000 Hz.");
                 //Check number of channels to be either mono or stereo
-                if (!new ushort[] {1,2}.Contains(w.Info.fmtHeader.nChannels)) throw new Exception("BPCM 2.0 only supports mono or stereo source wave files.");
+                if (!new ushort[] { 1, 2 }.Contains(w.Info.fmtHeader.nChannels)) throw new Exception("BPCM 2.0 only supports mono or stereo source wave files.");
 
                 if (Parameters.SilenceThreshold == 0) Parameters.SilenceThreshold = 4;
 
@@ -118,10 +119,11 @@ namespace BPCM.Easy
                                     //Output a silent frame with extended length information
                                     frame = Composer.ComposeFrame(null, (int)w.Info.fmtHeader.nSamplesPerSec, w.Info.fmtHeader.nChannels, InfoByte.CompressionType.None, true, (UInt32)silentSamples);
                                     f.Write(frame, 0, frame.Length);
-                                    if(silentSamples!=nSamplesFromMilliSeconds) afterSilence = true; else afterSilence = false;
+                                    if (silentSamples != nSamplesFromMilliSeconds) afterSilence = true; else afterSilence = false;
                                     nSamplesSilent = silentSamples;
                                     silentSamples = 0;
-                                } else afterSilence = false;
+                                }
+                                else afterSilence = false;
 
                                 //Prepare regular data
                                 if (w.Info.fmtHeader.nChannels == 2)
@@ -138,11 +140,11 @@ namespace BPCM.Easy
                                 compression = (byte)c.usedAlgo;
                                 break;
                         }
-                        
+
                         //Recalculate the blocksize when it differs from the setting, in example when the stream ends.
                         nSamplesFromPCMBuffer = (int)(pcmBuffer.LongLength / w.Info.fmtHeader.nChannels / (w.Info.fmtHeader.nBitsPerSample / 8));
                         nSamplesFromMilliSeconds = (int)((Parameters.BlockSize / 1000.0) * w.Info.fmtHeader.nSamplesPerSec);
-                        
+
                         frame = Composer.ComposeFrame(data, (int)w.Info.fmtHeader.nSamplesPerSec, w.Info.fmtHeader.nChannels, (InfoByte.CompressionType)compression, currentFrame == 0 || nSamplesFromPCMBuffer != nSamplesFromMilliSeconds || afterSilence, (UInt16)nSamplesFromPCMBuffer);
                         f.Write(frame, 0, frame.Length);
 
@@ -153,13 +155,19 @@ namespace BPCM.Easy
                         pos = TimeSpan.FromSeconds(precisepos);
 
                         //Fire the frame encoded event
-                        FrameEncodedCallback?.Invoke(new Stats() {
+                        FrameEncodedCallback?.Invoke(new Stats()
+                        {
                             FrameNumber = currentFrame
-                          , TimeStamp = samplets
-                          , FrameDuration = (nSamplesSilent>0) ? nSamplesSilent / (double)w.Info.fmtHeader.nSamplesPerSec : nSamplesFromPCMBuffer / (double)w.Info.fmtHeader.nSamplesPerSec
-                          , Bytes = frame.Length
-                          , Bitrate = (int)Math.Round((double)frame.Length / (pcmBuffer.Length / w.Info.fmtHeader.nAvgBytesPerSeconds) * 8, 0)
-                          , Compression = (Compression.Algorithm)compression
+                          ,
+                            TimeStamp = samplets
+                          ,
+                            FrameDuration = (nSamplesSilent > 0) ? nSamplesSilent / (double)w.Info.fmtHeader.nSamplesPerSec : nSamplesFromPCMBuffer / (double)w.Info.fmtHeader.nSamplesPerSec
+                          ,
+                            Bytes = frame.Length
+                          ,
+                            Bitrate = (int)Math.Round((double)frame.Length / (pcmBuffer.Length / w.Info.fmtHeader.nAvgBytesPerSeconds) * 8, 0)
+                          ,
+                            Compression = (Compression.Algorithm)compression
                         });
 
                         frame = null;
@@ -167,15 +175,23 @@ namespace BPCM.Easy
                         //Do the status callback after the interval has elapsed and reset the stopwatch
                         if (sw.ElapsedMilliseconds >= UpdateInterval || w.Position >= streamIn.Length)
                         {
-                            StatusCallback?.Invoke(new Status() {
+                            StatusCallback?.Invoke(new Status()
+                            {
                                 FramesEncoded = currentFrame
-                              , AvgBitrate = (int)Math.Round((f.Length / precisepos) * 8.0, 0)
-                              , Position = precisepos
-                              , PositionSamples = samplets
-                              , PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
-                              , BytesWritten = f.Length
-                              , Duration = w.Info.PCMDataLength / w.Info.fmtHeader.nAvgBytesPerSeconds
-                              , DurationSamples = w.Info.PCMDataLength / w.Info.fmtHeader.nBlockAlign
+                              ,
+                                AvgBitrate = (int)Math.Round((f.Length / precisepos) * 8.0, 0)
+                              ,
+                                Position = precisepos
+                              ,
+                                PositionSamples = samplets
+                              ,
+                                PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
+                              ,
+                                BytesWritten = f.Length
+                              ,
+                                Duration = w.Info.PCMDataLength / w.Info.fmtHeader.nAvgBytesPerSeconds
+                              ,
+                                DurationSamples = w.Info.PCMDataLength / w.Info.fmtHeader.nBlockAlign
                             });
                             sw.Restart();
                         }
@@ -192,38 +208,41 @@ namespace BPCM.Easy
         }
     }
 
-    static class Decoder
+    internal static class Decoder
     {
         public struct Status
         {
-            public double       Position;
-            public string       PositionString;
-            public long         BytesWritten;
-            public double       PercentageDone;
+            public double Position;
+            public string PositionString;
+            public long BytesWritten;
+            public double PercentageDone;
         }
 
         public struct Info
         {
-            public int          NumberOfChannels;
-            public int          SamplingRate;
-            public double       Duration;
-            public long         DurationSampleCount;
-            public string       DurationString;
-            public int          BitrateMin;
-            public int          BitrateAvg;
-            public int          BitrateMax;
-            public int          BlockSizeMinimum;
-            public int          BlockSizeAverage;
-            public int          BlockSizeMaximum;
-            public int          BlockSizeNominal;
+            public int NumberOfChannels;
+            public int SamplingRate;
+            public double Duration;
+            public long DurationSampleCount;
+            public string DurationString;
+            public int BitrateMin;
+            public int BitrateAvg;
+            public int BitrateMax;
+            public int BlockSizeMinimum;
+            public int BlockSizeAverage;
+            public int BlockSizeMaximum;
+            public int BlockSizeNominal;
+
             public Dictionary<int, long>
                                 FrameSampleCountHistogram;
-            public List<Frame>  FrameSet;
+
+            public List<Frame> FrameSet;
             public List<string> CompressionUsed;
-            public string       CompressionUsedString;
+            public string CompressionUsedString;
         }
 
         public delegate void dgBPCMFileOpened(Info Info);
+
         public delegate void dgUpdate(Status Status);
 
         public static Info AnalyzeFile(string bpcmFile)
@@ -234,23 +253,39 @@ namespace BPCM.Easy
                 double duration = (double)BPCM.Analysis.DurationSampleCount / BPCM.Analysis.FrameSet[0].SamplingRate;
                 TimeSpan dur = TimeSpan.FromSeconds(duration);
                 string strDuration = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", dur.Days, dur.Hours, dur.Minutes, dur.Seconds, (duration - Math.Floor(duration)) * 1000);
-                return new Info() {
+                return new Info()
+                {
                     NumberOfChannels = BPCM.Analysis.FrameSet[0].Channels
-                    , SamplingRate = BPCM.Analysis.FrameSet[0].SamplingRate
-                    , Duration = BPCM.Analysis.Duration
-                    , DurationSampleCount = BPCM.Analysis.DurationSampleCount
-                    , DurationString = strDuration
-                    , BitrateMin = BPCM.Analysis.BitrateMinimum
-                    , BitrateAvg = BPCM.Analysis.BitrateAverage
-                    , BitrateMax = BPCM.Analysis.BitrateMaximum
-                    , BlockSizeNominal = BPCM.Analysis.BlockSizeNominal
-                    , BlockSizeAverage = BPCM.Analysis.BlockSizeAverage
-                    , BlockSizeMaximum = BPCM.Analysis.BlockSizeMaximum
-                    , BlockSizeMinimum = BPCM.Analysis.BlockSizeMinimum
-                    , FrameSampleCountHistogram = BPCM.Analysis.FrameSampleCountHistogram
-                    , FrameSet = BPCM.Analysis.FrameSet
-                    , CompressionUsed = BPCM.Analysis.CompressionUsed
-                    , CompressionUsedString = string.Join(", ", BPCM.Analysis.CompressionUsed.ToArray())
+                    ,
+                    SamplingRate = BPCM.Analysis.FrameSet[0].SamplingRate
+                    ,
+                    Duration = BPCM.Analysis.Duration
+                    ,
+                    DurationSampleCount = BPCM.Analysis.DurationSampleCount
+                    ,
+                    DurationString = strDuration
+                    ,
+                    BitrateMin = BPCM.Analysis.BitrateMinimum
+                    ,
+                    BitrateAvg = BPCM.Analysis.BitrateAverage
+                    ,
+                    BitrateMax = BPCM.Analysis.BitrateMaximum
+                    ,
+                    BlockSizeNominal = BPCM.Analysis.BlockSizeNominal
+                    ,
+                    BlockSizeAverage = BPCM.Analysis.BlockSizeAverage
+                    ,
+                    BlockSizeMaximum = BPCM.Analysis.BlockSizeMaximum
+                    ,
+                    BlockSizeMinimum = BPCM.Analysis.BlockSizeMinimum
+                    ,
+                    FrameSampleCountHistogram = BPCM.Analysis.FrameSampleCountHistogram
+                    ,
+                    FrameSet = BPCM.Analysis.FrameSet
+                    ,
+                    CompressionUsed = BPCM.Analysis.CompressionUsed
+                    ,
+                    CompressionUsedString = string.Join(", ", BPCM.Analysis.CompressionUsed.ToArray())
                 };
             }
         }
@@ -263,36 +298,58 @@ namespace BPCM.Easy
                 double duration = (double)BPCM.Analysis.DurationSampleCount / BPCM.Analysis.FrameSet[0].SamplingRate;
                 TimeSpan dur = TimeSpan.FromSeconds(duration);
                 string strDuration = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", dur.Days, dur.Hours, dur.Minutes, dur.Seconds, (duration - Math.Floor(duration)) * 1000);
-                fileOpenedEvent?.Invoke(new Info() {
+                fileOpenedEvent?.Invoke(new Info()
+                {
                     NumberOfChannels = BPCM.Analysis.FrameSet[0].Channels
-                    , SamplingRate = BPCM.Analysis.FrameSet[0].SamplingRate
-                    , Duration = BPCM.Analysis.Duration
-                    , DurationSampleCount = BPCM.Analysis.DurationSampleCount
-                    , DurationString = strDuration
-                    , BitrateMin = BPCM.Analysis.BitrateMinimum
-                    , BitrateAvg = BPCM.Analysis.BitrateAverage
-                    , BitrateMax = BPCM.Analysis.BitrateMaximum
-                    , BlockSizeNominal = BPCM.Analysis.BlockSizeNominal
-                    , BlockSizeAverage = BPCM.Analysis.BlockSizeAverage
-                    , BlockSizeMaximum = BPCM.Analysis.BlockSizeMaximum
-                    , BlockSizeMinimum = BPCM.Analysis.BlockSizeMinimum
-                    , FrameSampleCountHistogram = BPCM.Analysis.FrameSampleCountHistogram
-                    , FrameSet = BPCM.Analysis.FrameSet
-                    , CompressionUsed = BPCM.Analysis.CompressionUsed
-                    , CompressionUsedString = string.Join(", ", BPCM.Analysis.CompressionUsed.ToArray())
+                    ,
+                    SamplingRate = BPCM.Analysis.FrameSet[0].SamplingRate
+                    ,
+                    Duration = BPCM.Analysis.Duration
+                    ,
+                    DurationSampleCount = BPCM.Analysis.DurationSampleCount
+                    ,
+                    DurationString = strDuration
+                    ,
+                    BitrateMin = BPCM.Analysis.BitrateMinimum
+                    ,
+                    BitrateAvg = BPCM.Analysis.BitrateAverage
+                    ,
+                    BitrateMax = BPCM.Analysis.BitrateMaximum
+                    ,
+                    BlockSizeNominal = BPCM.Analysis.BlockSizeNominal
+                    ,
+                    BlockSizeAverage = BPCM.Analysis.BlockSizeAverage
+                    ,
+                    BlockSizeMaximum = BPCM.Analysis.BlockSizeMaximum
+                    ,
+                    BlockSizeMinimum = BPCM.Analysis.BlockSizeMinimum
+                    ,
+                    FrameSampleCountHistogram = BPCM.Analysis.FrameSampleCountHistogram
+                    ,
+                    FrameSet = BPCM.Analysis.FrameSet
+                    ,
+                    CompressionUsed = BPCM.Analysis.CompressionUsed
+                    ,
+                    CompressionUsedString = string.Join(", ", BPCM.Analysis.CompressionUsed.ToArray())
                 });
 
                 BPCM.EnableDither = enableDither;
 
                 using (FileStream streamOut = new FileStream(waveFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 1048576, FileOptions.RandomAccess))
                 {
-                    WAVEWriter w = new WAVEWriter(streamOut, new WAVEFormat() {
-                          nSamplesPerSec = (uint)BPCM.Analysis.FrameSet[0].SamplingRate
-                        , nChannels = (ushort)BPCM.Analysis.FrameSet[0].Channels
-                        , nBitsPerSample = 16
-                        , nBlockAlign = (ushort)(BPCM.Analysis.FrameSet[0].Channels * 2)
-                        , nAvgBytesPerSeconds = (uint)(BPCM.Analysis.FrameSet[0].Channels * 2 * BPCM.Analysis.FrameSet[0].SamplingRate)
-                        , wFormatTag = 1 //PCM signed integer Intel
+                    WAVEWriter w = new WAVEWriter(streamOut, new WAVEFormat()
+                    {
+                        nSamplesPerSec = (uint)BPCM.Analysis.FrameSet[0].SamplingRate
+                        ,
+                        nChannels = (ushort)BPCM.Analysis.FrameSet[0].Channels
+                        ,
+                        nBitsPerSample = 16
+                        ,
+                        nBlockAlign = (ushort)(BPCM.Analysis.FrameSet[0].Channels * 2)
+                        ,
+                        nAvgBytesPerSeconds = (uint)(BPCM.Analysis.FrameSet[0].Channels * 2 * BPCM.Analysis.FrameSet[0].SamplingRate)
+                        ,
+                        wFormatTag = 1 //PCM signed integer Intel
                     });
 
                     Stopwatch ssw = new Stopwatch();
@@ -303,7 +360,6 @@ namespace BPCM.Easy
 
                     while (true)
                     {
-
                         object tmp = BPCM.GetFrame();
                         if (tmp.Equals(false)) break;
                         Frame frame = (Frame)tmp;
@@ -320,10 +376,13 @@ namespace BPCM.Easy
                             pos = TimeSpan.FromSeconds(precisepos);
                             statusCallback?.Invoke(new Status()
                             {
-                                  BytesWritten = w.PCMPosition
-                                , Position = (double)w.PCMPosition / w.fmtHeader.nAvgBytesPerSeconds
-                                , PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
-                                , PercentageDone = (double)s.Position / s.Length * 100
+                                BytesWritten = w.PCMPosition
+                                ,
+                                Position = (double)w.PCMPosition / w.fmtHeader.nAvgBytesPerSeconds
+                                ,
+                                PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
+                                ,
+                                PercentageDone = (double)s.Position / s.Length * 100
                             });
                             ssw.Restart();
                         }
@@ -335,10 +394,13 @@ namespace BPCM.Easy
 
                     statusCallback?.Invoke(new Status()
                     {
-                          BytesWritten = w.PCMPosition
-                        , Position = (double)w.PCMPosition / w.fmtHeader.nAvgBytesPerSeconds
-                        , PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
-                        , PercentageDone = 100
+                        BytesWritten = w.PCMPosition
+                        ,
+                        Position = (double)w.PCMPosition / w.fmtHeader.nAvgBytesPerSeconds
+                        ,
+                        PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
+                        ,
+                        PercentageDone = 100
                     });
                     w.Finalize();
                 }
@@ -348,64 +410,72 @@ namespace BPCM.Easy
 
     public class Player : IDisposable
     {
-        private double              _pos;
+        private double _pos;
 
-        private bool                _playing;
-        private bool                _seeking;
-        private bool                _dontExit;
-        
+        private bool _playing;
+        private bool _seeking;
+        private bool _dontExit;
 
-        private FileStream          _BPCMFile;
-        private BitstreamReader     _BPCMStream;
-        private BPCMWaveProvider    _BPCMWaveProvider;
-        private WaveOutEvent        _WaveOut;
+        private FileStream _BPCMFile;
+        private BitstreamReader _BPCMStream;
+        private BPCMWaveProvider _BPCMWaveProvider;
+        private WaveOutEvent _WaveOut;
 
         public enum PlaybackStoppedReason : byte
         {
-              BufferEmpty   = 0xFF
-            , SomeError     = 0xF7
-            , NoMoreData    = 0x01
-            , StopCalled    = 0x00
+            BufferEmpty = 0xFF
+            , SomeError = 0xF7
+            , NoMoreData = 0x01
+            , StopCalled = 0x00
         }
 
         public struct ConfigurationBean
         {
-            public int                      WaveOutDevice;
-            public int                      WaveOutBufferSize;
-            public int                      WaveOutBufferCount;
-            public PlaybackStopped          PlaybackStoppedEvent;
-            public PlaybackUpdate           PlaybackUpdateEvent;
-            public WaveOutInitialized       WaveOutInitializedEvent;
-            public float                    Volume;
-            public double                   PlaybackRate;
-            public bool                     EnableDithering;
+            public int WaveOutDevice;
+            public int WaveOutBufferSize;
+            public int WaveOutBufferCount;
+            public PlaybackStopped PlaybackStoppedEvent;
+            public PlaybackUpdate PlaybackUpdateEvent;
+            public WaveOutInitialized WaveOutInitializedEvent;
+            public float Volume;
+            public double PlaybackRate;
+            public bool EnableDithering;
         }
 
-        private ConfigurationBean   _config;
+        private ConfigurationBean _config;
 
         public delegate void WaveOutInitialized(WaveOutCapabilities devcaps);
+
         public delegate void PlaybackStopped(PlaybackStoppedReason Reason);
+
         public delegate void PlaybackUpdate(Frame CurrentFrame);
 
-        public double Duration      { get { if (_BPCMStream != null) return _BPCMStream.Analysis.Duration; else return -1; } }
-        public double Position      { get { return _pos; } set { __INTERNAL_Seek(value); } }
-        public float  Volume        { get { return _config.Volume; } set { if (_WaveOut != null) { float mvol=value; if(mvol>1)mvol=1f; if(mvol>0)mvol=0f; _WaveOut.Volume=mvol; _config.Volume=mvol; value=mvol; } } }
-        public double PlaybackRate  { get { return _config.PlaybackRate; } set { _config.PlaybackRate = value; __INTERNAL_ChangeRate(); } }
-        public bool Playing {
+        public double Duration { get { if (_BPCMStream != null) return _BPCMStream.Analysis.Duration; else return -1; } }
+        public double Position { get { return _pos; } set { __INTERNAL_Seek(value); } }
+        public float Volume { get { return _config.Volume; } set { if (_WaveOut != null) { float mvol = value; if (mvol > 1) mvol = 1f; if (mvol > 0) mvol = 0f; _WaveOut.Volume = mvol; _config.Volume = mvol; value = mvol; } } }
+        public double PlaybackRate { get { return _config.PlaybackRate; } set { _config.PlaybackRate = value; __INTERNAL_ChangeRate(); } }
+
+        public bool Playing
+        {
             get { return _playing; }
             set
             {
-                if (_WaveOut != null) {
-                    if (_playing == true) {
+                if (_WaveOut != null)
+                {
+                    if (_playing == true)
+                    {
                         _WaveOut.Stop();
                         _playing = false;
-                    } else {
+                    }
+                    else
+                    {
                         _WaveOut.Play();
                         _playing = true;
                     }
                 }
             }
         }
+
         public BitstreamReader.Stats Stats { get { if (_BPCMStream != null) return _BPCMStream.Analysis; else return new BitstreamReader.Stats(); } }
 
         private void __INTERNAL_WaveOutInit()
@@ -476,17 +546,25 @@ namespace BPCM.Easy
             _BPCMStream.EnableDither = _config.EnableDithering;
 
             __INTERNAL_WaveOutInit();
-            
+
             //Determine the used device and fire the init event once.
             WaveOutCapabilities devcaps = WaveOut.GetCapabilities(0);
             for (int x = 0; x < WaveOut.DeviceCount; x++) if (x == _WaveOut.DeviceNumber || x != 0) devcaps = WaveOut.GetCapabilities(x);
             _config.WaveOutInitializedEvent?.Invoke(devcaps);
         }
 
-        public void Play() { if (!Playing) Playing = true; }
-        public void Stop() { if (Playing) Playing = false; }
+        public void Play()
+        {
+            if (!Playing) Playing = true;
+        }
+
+        public void Stop()
+        {
+            if (Playing) Playing = false;
+        }
 
         #region IDisposable Support
+
         private bool disposedValue = false;
 
         public void Dispose()
@@ -513,16 +591,18 @@ namespace BPCM.Easy
                 disposedValue = true;
             }
         }
-        
-        ~Player() {
+
+        ~Player()
+        {
             Dispose(false);
         }
-        
+
         void IDisposable.Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable Support
     }
 }

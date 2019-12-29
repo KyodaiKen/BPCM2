@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
-
-
 namespace NAudio.Utils
-{    
+{
     /// <summary>
     /// these will become extension methods once we move to .NET 3.5
     /// </summary>
@@ -38,7 +35,7 @@ namespace NAudio.Utils
             sb.Append("\r\n");
             return sb.ToString();
         }
-        
+
         /// <summary>
         /// Decodes the buffer using the specified encoding, stopping at the first null
         /// </summary>

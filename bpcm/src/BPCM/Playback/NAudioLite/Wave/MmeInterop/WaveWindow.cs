@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace NAudio.Wave
 {
-    class WaveWindowNative : System.Windows.Forms.NativeWindow
+    internal class WaveWindowNative : System.Windows.Forms.NativeWindow
     {
         private WaveInterop.WaveCallback waveCallback;
 
@@ -18,8 +16,8 @@ namespace NAudio.Wave
         protected override void WndProc(ref System.Windows.Forms.Message m)
         {
             WaveInterop.WaveMessage message = (WaveInterop.WaveMessage)m.Msg;
-            
-            switch(message)
+
+            switch (message)
             {
                 case WaveInterop.WaveMessage.WaveOutDone:
                 case WaveInterop.WaveMessage.WaveInData:
@@ -28,12 +26,14 @@ namespace NAudio.Wave
                     Marshal.PtrToStructure(m.LParam, waveHeader);
                     waveCallback(hOutputDevice, message, IntPtr.Zero, waveHeader, IntPtr.Zero);
                     break;
+
                 case WaveInterop.WaveMessage.WaveOutOpen:
                 case WaveInterop.WaveMessage.WaveOutClose:
                 case WaveInterop.WaveMessage.WaveInClose:
                 case WaveInterop.WaveMessage.WaveInOpen:
                     waveCallback(m.WParam, message, IntPtr.Zero, null, IntPtr.Zero);
                     break;
+
                 default:
                     base.WndProc(ref m);
                     break;
@@ -41,7 +41,7 @@ namespace NAudio.Wave
         }
     }
 
-    class WaveWindow : Form
+    internal class WaveWindow : Form
     {
         private WaveInterop.WaveCallback waveCallback;
 
@@ -53,8 +53,8 @@ namespace NAudio.Wave
         protected override void WndProc(ref System.Windows.Forms.Message m)
         {
             WaveInterop.WaveMessage message = (WaveInterop.WaveMessage)m.Msg;
-            
-            switch(message)
+
+            switch (message)
             {
                 case WaveInterop.WaveMessage.WaveOutDone:
                 case WaveInterop.WaveMessage.WaveInData:
@@ -63,12 +63,14 @@ namespace NAudio.Wave
                     Marshal.PtrToStructure(m.LParam, waveHeader);
                     waveCallback(hOutputDevice, message, IntPtr.Zero, waveHeader, IntPtr.Zero);
                     break;
+
                 case WaveInterop.WaveMessage.WaveOutOpen:
                 case WaveInterop.WaveMessage.WaveOutClose:
                 case WaveInterop.WaveMessage.WaveInClose:
                 case WaveInterop.WaveMessage.WaveInOpen:
                     waveCallback(m.WParam, message, IntPtr.Zero, null, IntPtr.Zero);
                     break;
+
                 default:
                     base.WndProc(ref m);
                     break;

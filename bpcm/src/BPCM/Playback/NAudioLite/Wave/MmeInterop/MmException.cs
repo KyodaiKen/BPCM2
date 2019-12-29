@@ -22,7 +22,6 @@ namespace NAudio
             this.function = function;
         }
 
-
         private static string ErrorMessage(MmResult result, string function)
         {
             return String.Format("{0} calling {1}", result, function);

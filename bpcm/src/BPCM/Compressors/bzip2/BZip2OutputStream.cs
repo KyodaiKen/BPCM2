@@ -47,7 +47,6 @@
  * under the License.
  */
 
-
 // Design Notes:
 //
 // This class follows the classic Decorator pattern: it is a Stream that
@@ -82,7 +81,6 @@
 using System;
 using System.IO;
 
-
 namespace Ionic.BZip2
 {
     /// <summary>
@@ -91,13 +89,13 @@ namespace Ionic.BZip2
     /// </summary>
     public class BZip2OutputStream : System.IO.Stream
     {
-        int totalBytesWrittenIn;
-        bool leaveOpen;
-        BZip2Compressor compressor;
-        uint combinedCRC;
-        Stream output;
-        BitWriter bw;
-        int blockSize100k;  // 0...9
+        private int totalBytesWrittenIn;
+        private bool leaveOpen;
+        private BZip2Compressor compressor;
+        private uint combinedCRC;
+        private Stream output;
+        private BitWriter bw;
+        private int blockSize100k;  // 0...9
 
         private TraceBits desiredTrace = TraceBits.Crc | TraceBits.Write;
 
@@ -140,7 +138,6 @@ namespace Ionic.BZip2
         {
         }
 
-
         /// <summary>
         ///   Constructs a new <clist>BZip2OutputStream</clist> with specified blocksize.
         /// </summary>
@@ -154,7 +151,6 @@ namespace Ionic.BZip2
         {
         }
 
-
         /// <summary>
         ///   Constructs a new <clist>BZip2OutputStream</clist>.
         /// </summary>
@@ -166,7 +162,6 @@ namespace Ionic.BZip2
             : this(output, BZip2.MaxBlockSize, leaveOpen)
         {
         }
-
 
         /// <summary>
         ///   Constructs a new <clist>BZip2OutputStream</clist> with specified blocksize,
@@ -204,9 +199,6 @@ namespace Ionic.BZip2
             EmitHeader();
         }
 
-
-
-
         /// <summary>
         ///   Close the stream.
         /// </summary>
@@ -226,7 +218,6 @@ namespace Ionic.BZip2
                     o.Close();
             }
         }
-
 
         /// <summary>
         ///   Flush the stream.
@@ -277,7 +268,7 @@ namespace Ionic.BZip2
                         this.bw.TotalBytesWrittenOut);
         }
 
-        void Finish()
+        private void Finish()
         {
             // Console.WriteLine("BZip2:Finish");
 
@@ -285,13 +276,13 @@ namespace Ionic.BZip2
             {
                 var totalBefore = this.bw.TotalBytesWrittenOut;
                 this.compressor.CompressAndWrite();
-                TraceOutput(TraceBits.Write,"out block length (bytes): {0} (0x{0:X})",
+                TraceOutput(TraceBits.Write, "out block length (bytes): {0} (0x{0:X})",
                             this.bw.TotalBytesWrittenOut - totalBefore);
 
                 TraceOutput(TraceBits.Crc, " combined CRC (before): {0:X8}",
                             this.combinedCRC);
                 this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
-                this.combinedCRC ^= (uint) compressor.Crc32;
+                this.combinedCRC ^= (uint)compressor.Crc32;
                 TraceOutput(TraceBits.Crc, " block    CRC         : {0:X8}",
                             this.compressor.Crc32);
                 TraceOutput(TraceBits.Crc, " combined CRC (final) : {0:X8}",
@@ -307,7 +298,6 @@ namespace Ionic.BZip2
             }
         }
 
-
         /// <summary>
         ///   The blocksize parameter specified at construction time.
         /// </summary>
@@ -315,7 +305,6 @@ namespace Ionic.BZip2
         {
             get { return this.blockSize100k; }
         }
-
 
         /// <summary>
         ///   Write data to the stream.
@@ -367,19 +356,19 @@ namespace Ionic.BZip2
 
                     var totalBefore = this.bw.TotalBytesWrittenOut;
                     this.compressor.CompressAndWrite();
-                    TraceOutput(TraceBits.Write,"out block length (bytes): {0} (0x{0:X})",
+                    TraceOutput(TraceBits.Write, "out block length (bytes): {0} (0x{0:X})",
                                 this.bw.TotalBytesWrittenOut - totalBefore);
 
-                            // and now any remaining bits
-                            TraceOutput(TraceBits.Write,
-                                        " remaining: {0} 0x{1:X}",
-                                        this.bw.NumRemainingBits,
-                                        this.bw.RemainingBits);
+                    // and now any remaining bits
+                    TraceOutput(TraceBits.Write,
+                                " remaining: {0} 0x{1:X}",
+                                this.bw.NumRemainingBits,
+                                this.bw.RemainingBits);
 
                     TraceOutput(TraceBits.Crc, " combined CRC (before): {0:X8}",
                                 this.combinedCRC);
                     this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
-                    this.combinedCRC ^= (uint) compressor.Crc32;
+                    this.combinedCRC ^= (uint)compressor.Crc32;
                     TraceOutput(TraceBits.Crc, " block    CRC         : {0:X8}",
                                 compressor.Crc32);
                     TraceOutput(TraceBits.Crc, " combined CRC (after) : {0:X8}",
@@ -392,9 +381,6 @@ namespace Ionic.BZip2
 
             totalBytesWrittenIn += bytesWritten;
         }
-
-
-
 
         /// <summary>
         /// Indicates whether the stream can be read.
@@ -492,17 +478,15 @@ namespace Ionic.BZip2
             throw new NotImplementedException();
         }
 
-
         // used only when Trace is defined
         [Flags]
-        enum TraceBits : uint
+        private enum TraceBits : uint
         {
-            None         = 0,
-            Crc          = 1,
-            Write        = 2,
-            All          = 0xffffffff,
+            None = 0,
+            Crc = 1,
+            Write = 2,
+            All = 0xffffffff,
         }
-
 
         [System.Diagnostics.ConditionalAttribute("Trace")]
         private void TraceOutput(TraceBits bits, string format, params object[] varParams)
@@ -513,7 +497,7 @@ namespace Ionic.BZip2
                 {
                     int tid = System.Threading.Thread.CurrentThread.GetHashCode();
 #if !SILVERLIGHT && !NETCF
-                    Console.ForegroundColor = (ConsoleColor) (tid % 8 + 10);
+                    Console.ForegroundColor = (ConsoleColor)(tid % 8 + 10);
 #endif
                     Console.Write("{0:000} PBOS ", tid);
                     Console.WriteLine(format, varParams);
@@ -523,8 +507,5 @@ namespace Ionic.BZip2
                 }
             }
         }
-
-
     }
-
 }

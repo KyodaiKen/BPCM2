@@ -1,13 +1,12 @@
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
-namespace NAudio.Wave 
+namespace NAudio.Wave
 {
     /// <summary>
     /// A buffer of Wave samples for streaming to a Wave Output device
     /// </summary>
-    class WaveOutBuffer : IDisposable
+    internal class WaveOutBuffer : IDisposable
     {
         private readonly WaveHeader header;
         private readonly Int32 bufferSize; // allocated bytes, may not be the same as bytes read
@@ -94,7 +93,7 @@ namespace NAudio.Wave
             }
         }
 
-        #endregion
+        #endregion Dispose Pattern
 
         /// this is called by the WAVE callback and should be used to refill the buffer
         internal bool OnDone()
@@ -156,6 +155,5 @@ namespace NAudio.Wave
 
             GC.KeepAlive(this);
         }
-
     }
 }

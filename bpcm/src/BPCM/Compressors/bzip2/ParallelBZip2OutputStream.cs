@@ -28,7 +28,6 @@
 // ------------------------------------------------------------------
 // flymake: csc.exe /t:module BZip2InputStream.cs BZip2Compressor.cs Rand.cs BCRC32.cs @@FILE@@
 
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE stream
@@ -47,7 +46,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 
 // Design Notes:
 //
@@ -129,8 +127,8 @@
 //
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace Ionic.BZip2
@@ -152,7 +150,6 @@ namespace Ionic.BZip2
             this.index = ix;
         }
     }
-
 
     /// <summary>
     ///   A write-only decorator stream that compresses data as it is
@@ -196,21 +193,21 @@ namespace Ionic.BZip2
         private volatile Exception pendingException;
         private bool handlingException;
         private bool emitting;
-        private System.Collections.Generic.Queue<int>     toWrite;
-        private System.Collections.Generic.Queue<int>     toFill;
+        private System.Collections.Generic.Queue<int> toWrite;
+        private System.Collections.Generic.Queue<int> toFill;
         private System.Collections.Generic.List<WorkItem> pool;
         private object latestLock = new object();
         private object eLock = new object(); // for exceptions
         private object outputLock = new object(); // for multi-thread output
         private AutoResetEvent newlyCompressedBlob;
 
-        long totalBytesWrittenIn;
-        long totalBytesWrittenOut;
-        bool leaveOpen;
-        uint combinedCRC;
-        Stream output;
-        BitWriter bw;
-        int blockSize100k;  // 0...9
+        private long totalBytesWrittenIn;
+        private long totalBytesWrittenOut;
+        private bool leaveOpen;
+        private uint combinedCRC;
+        private Stream output;
+        private BitWriter bw;
+        private int blockSize100k;  // 0...9
 
         private TraceBits desiredTrace = TraceBits.Crc | TraceBits.Write;
 
@@ -313,7 +310,6 @@ namespace Ionic.BZip2
             EmitHeader();
         }
 
-
         private void InitializePoolOfWorkItems()
         {
             this.toWrite = new Queue<int>();
@@ -321,7 +317,7 @@ namespace Ionic.BZip2
             this.pool = new System.Collections.Generic.List<WorkItem>();
             int nWorkers = BufferPairsPerCore * Environment.ProcessorCount;
             nWorkers = Math.Min(nWorkers, this.MaxWorkers);
-            for(int i=0; i < nWorkers; i++)
+            for (int i = 0; i < nWorkers; i++)
             {
                 this.pool.Add(new WorkItem(i, this.blockSize100k));
                 this.toFill.Enqueue(i);
@@ -333,7 +329,6 @@ namespace Ionic.BZip2
             this.lastWritten = -1;
             this.latestCompressed = -1;
         }
-
 
         /// <summary>
         ///   The maximum number of concurrent compression worker threads to use.
@@ -453,7 +448,6 @@ namespace Ionic.BZip2
                 o.Close();
         }
 
-
         private void FlushOutput(bool lastInput)
         {
             if (this.emitting) return;
@@ -476,8 +470,6 @@ namespace Ionic.BZip2
                 EmitPendingBuffers(false, false);
             }
         }
-
-
 
         /// <summary>
         ///   Flush the stream.
@@ -529,7 +521,6 @@ namespace Ionic.BZip2
                         this.bw.TotalBytesWrittenOut);
         }
 
-
         /// <summary>
         ///   The blocksize parameter specified at construction time.
         /// </summary>
@@ -537,7 +528,6 @@ namespace Ionic.BZip2
         {
             get { return this.blockSize100k; }
         }
-
 
         /// <summary>
         ///   Write data to the stream.
@@ -593,9 +583,7 @@ namespace Ionic.BZip2
                 throw new IndexOutOfRangeException(String.Format("offset({0}) count({1}) bLength({2})",
                                                                  offset, count, buffer.Length));
 
-
             if (count == 0) return;  // nothing to do
-
 
             if (!this.firstWriteDone)
             {
@@ -642,7 +630,7 @@ namespace Ionic.BZip2
                 int n = workitem.Compressor.Fill(buffer, offset, bytesRemaining);
                 if (n != bytesRemaining)
                 {
-                    if (!ThreadPool.QueueUserWorkItem( CompressOne, workitem ))
+                    if (!ThreadPool.QueueUserWorkItem(CompressOne, workitem))
                         throw new Exception("Cannot enqueue workitem");
 
                     this.currentlyFilling = -1; // will get a new buffer next time
@@ -659,8 +647,6 @@ namespace Ionic.BZip2
             totalBytesWrittenIn += bytesWritten;
             return;
         }
-
-
 
         private void EmitPendingBuffers(bool doAll, bool mustWait)
         {
@@ -705,7 +691,7 @@ namespace Ionic.BZip2
                             if (workitem.ordinal != this.lastWritten + 1)
                             {
                                 // out of order. requeue and try again.
-                                lock(this.toWrite)
+                                lock (this.toWrite)
                                 {
                                     this.toWrite.Enqueue(nextToWrite);
                                 }
@@ -733,7 +719,7 @@ namespace Ionic.BZip2
                             var bw2 = workitem.bw;
                             bw2.Flush(); // not bw2.FinishAndPad()!
                             var ms = workitem.ms;
-                            ms.Seek(0,SeekOrigin.Begin);
+                            ms.Seek(0, SeekOrigin.Begin);
 
                             // cannot dump bytes!!
                             // ms.WriteTo(this.output);
@@ -743,7 +729,7 @@ namespace Ionic.BZip2
                             int y = -1;
                             long totOut = 0;
                             var buffer = new byte[1024];
-                            while ((n = ms.Read(buffer,0,buffer.Length)) > 0)
+                            while ((n = ms.Read(buffer, 0, buffer.Length)) > 0)
                             {
 #if Trace
                                 if (y == -1) // diagnostics only
@@ -756,7 +742,7 @@ namespace Ionic.BZip2
                                 }
 #endif
                                 y = n;
-                                for (int k=0; k < n; k++)
+                                for (int k = 0; k < n; k++)
                                 {
                                     this.bw.WriteByte(buffer[k]);
                                 }
@@ -781,10 +767,10 @@ namespace Ionic.BZip2
                                 this.bw.WriteBits(bw2.NumRemainingBits, bw2.RemainingBits);
                             }
 
-                            TraceOutput(TraceBits.Crc," combined CRC (before): {0:X8}",
+                            TraceOutput(TraceBits.Crc, " combined CRC (before): {0:X8}",
                                         this.combinedCRC);
                             this.combinedCRC = (this.combinedCRC << 1) | (this.combinedCRC >> 31);
-                            this.combinedCRC ^= (uint) workitem.Compressor.Crc32;
+                            this.combinedCRC ^= (uint)workitem.Compressor.Crc32;
 
                             TraceOutput(TraceBits.Crc,
                                         " block    CRC         : {0:X8}",
@@ -810,9 +796,7 @@ namespace Ionic.BZip2
                     }
                     else
                         nextToWrite = -1;
-
                 } while (nextToWrite >= 0);
-
             } while (doAll && (this.lastWritten != this.latestCompressed));
 
             if (doAll)
@@ -824,17 +808,16 @@ namespace Ionic.BZip2
             emitting = false;
         }
 
-
         private void CompressOne(Object wi)
         {
             // compress and one buffer
-            WorkItem workitem = (WorkItem) wi;
+            WorkItem workitem = (WorkItem)wi;
             try
             {
                 // compress and write to the compressor's MemoryStream
                 workitem.Compressor.CompressAndWrite();
 
-                lock(this.latestLock)
+                lock (this.latestLock)
                 {
                     if (workitem.ordinal > this.latestCompressed)
                         this.latestCompressed = workitem.ordinal;
@@ -847,17 +830,14 @@ namespace Ionic.BZip2
             }
             catch (System.Exception exc1)
             {
-                lock(this.eLock)
+                lock (this.eLock)
                 {
                     // expose the exception to the main thread
-                    if (this.pendingException!=null)
+                    if (this.pendingException != null)
                         this.pendingException = exc1;
                 }
             }
         }
-
-
-
 
         /// <summary>
         /// Indicates whether the stream can be read.
@@ -962,28 +942,26 @@ namespace Ionic.BZip2
             throw new NotImplementedException();
         }
 
-
         // used only when Trace is defined
         [Flags]
-        enum TraceBits : uint
+        private enum TraceBits : uint
         {
-            None         = 0,
-            Crc          = 1,
-            Write        = 2,
-            All          = 0xffffffff,
+            None = 0,
+            Crc = 1,
+            Write = 2,
+            All = 0xffffffff,
         }
-
 
         [System.Diagnostics.ConditionalAttribute("Trace")]
         private void TraceOutput(TraceBits bits, string format, params object[] varParams)
         {
             if ((bits & this.desiredTrace) != 0)
             {
-                lock(outputLock)
+                lock (outputLock)
                 {
                     int tid = Thread.CurrentThread.GetHashCode();
 #if !SILVERLIGHT
-                    Console.ForegroundColor = (ConsoleColor) (tid % 8 + 10);
+                    Console.ForegroundColor = (ConsoleColor)(tid % 8 + 10);
 #endif
                     Console.Write("{0:000} PBOS ", tid);
                     Console.WriteLine(format, varParams);
@@ -993,7 +971,5 @@ namespace Ionic.BZip2
                 }
             }
         }
-
     }
-
 }

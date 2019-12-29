@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace NAudio.Wave
 {
@@ -44,9 +44,10 @@ namespace NAudio.Wave
         /// <summary>
         /// Gets the DirectSound output devices in the system
         /// </summary>
-        public static IEnumerable<DirectSoundDeviceInfo> Devices 
+        public static IEnumerable<DirectSoundDeviceInfo> Devices
         {
-            get {
+            get
+            {
                 devices = new List<DirectSoundDeviceInfo>();
                 DirectSoundEnumerate(new DSEnumCallback(EnumCallback), IntPtr.Zero);
                 return devices;
@@ -68,7 +69,7 @@ namespace NAudio.Wave
                 Marshal.Copy(lpGuid, guidBytes, 0, 16);
                 device.Guid = new Guid(guidBytes);
             }
-            device.Description =  Marshal.PtrToStringAnsi(lpcstrDescription);
+            device.Description = Marshal.PtrToStringAnsi(lpcstrDescription);
             if (lpcstrModule != null)
             {
                 device.ModuleName = Marshal.PtrToStringAnsi(lpcstrModule);
@@ -76,7 +77,6 @@ namespace NAudio.Wave
             devices.Add(device);
             return true;
         }
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DirectSoundOut"/> class.
@@ -223,7 +223,6 @@ namespace NAudio.Wave
             }
         }
 
-
         /// <summary>
         /// Initialise playback
         /// </summary>
@@ -265,7 +264,7 @@ namespace NAudio.Wave
                     directSound.CreateSoundBuffer(bufferDesc, out soundBufferObj, IntPtr.Zero);
                     primarySoundBuffer = (IDirectSoundBuffer)soundBufferObj;
 
-                    // Play & Loop on the PrimarySound Buffer 
+                    // Play & Loop on the PrimarySound Buffer
                     primarySoundBuffer.Play(0, 0, DirectSoundPlayFlags.DSBPLAY_LOOPING);
 
                     // -------------------------------------------------------------------------------------
@@ -508,7 +507,7 @@ namespace NAudio.Wave
                     {
                         Debug.WriteLine(e.ToString());
                         // don't overwrite the original reason we exited the playback loop
-                        if (exception == null) exception = e; 
+                        if (exception == null) exception = e;
                     }
                 }
 
@@ -540,7 +539,6 @@ namespace NAudio.Wave
             }
         }
 
-
         /// <summary>
         /// Stop playback
         /// </summary>
@@ -560,7 +558,6 @@ namespace NAudio.Wave
                 }
             }
         }
-
 
         /// <summary>
         /// Feeds the SecondaryBuffer with the WaveStream
@@ -619,18 +616,20 @@ namespace NAudio.Wave
             return bytesRead;
         }
 
-
         //----------------------------------------------------------------------------------------------
         // Minimal Native DirectSound COM interop interfaces
         //----------------------------------------------------------------------------------------------
+
         #region Native DirectSound COM Interface
 
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
         internal class BufferDescription
         {
             public int dwSize;
+
             [MarshalAs(UnmanagedType.U4)]
             public DirectSoundBufferCaps dwFlags;
+
             public uint dwBufferBytes;
             public int dwReserved;
             public IntPtr lpwfxFormat;
@@ -722,18 +721,25 @@ namespace NAudio.Wave
         {
             //STDMETHOD(CreateSoundBuffer)    (THIS_ LPCDSBUFFERDESC pcDSBufferDesc, LPDIRECTSOUNDBUFFER *ppDSBuffer, LPUNKNOWN pUnkOuter) PURE;
             void CreateSoundBuffer([In] BufferDescription desc, [Out, MarshalAs(UnmanagedType.Interface)] out object dsDSoundBuffer, IntPtr pUnkOuter);
+
             //STDMETHOD(GetCaps)              (THIS_ LPDSCAPS pDSCaps) PURE;
             void GetCaps(IntPtr caps);
+
             //STDMETHOD(DuplicateSoundBuffer) (THIS_ LPDIRECTSOUNDBUFFER pDSBufferOriginal, LPDIRECTSOUNDBUFFER *ppDSBufferDuplicate) PURE;
             void DuplicateSoundBuffer([In, MarshalAs(UnmanagedType.Interface)] IDirectSoundBuffer bufferOriginal, [In, MarshalAs(UnmanagedType.Interface)] IDirectSoundBuffer bufferDuplicate);
+
             //STDMETHOD(SetCooperativeLevel)  (THIS_ HWND hwnd, DWORD dwLevel) PURE;
             void SetCooperativeLevel(IntPtr HWND, [In, MarshalAs(UnmanagedType.U4)] DirectSoundCooperativeLevel dwLevel);
+
             //STDMETHOD(Compact)              (THIS) PURE;
             void Compact();
+
             //STDMETHOD(GetSpeakerConfig)     (THIS_ LPDWORD pdwSpeakerConfig) PURE;
             void GetSpeakerConfig(IntPtr pdwSpeakerConfig);
+
             //STDMETHOD(SetSpeakerConfig)     (THIS_ DWORD dwSpeakerConfig) PURE;
             void SetSpeakerConfig(uint pdwSpeakerConfig);
+
             //STDMETHOD(Initialize)           (THIS_ LPCGUID pcGuidDevice) PURE;
             void Initialize([In, MarshalAs(UnmanagedType.LPStruct)] Guid guid);
         }
@@ -749,42 +755,59 @@ namespace NAudio.Wave
         {
             //    STDMETHOD(GetCaps)              (THIS_ LPDSBCAPS pDSBufferCaps) PURE;
             void GetCaps([MarshalAs(UnmanagedType.LPStruct)] BufferCaps pBufferCaps);
+
             //    STDMETHOD(GetCurrentPosition)   (THIS_ LPDWORD pdwCurrentPlayCursor, LPDWORD pdwCurrentWriteCursor) PURE;
             void GetCurrentPosition([Out] out uint currentPlayCursor, [Out] out uint currentWriteCursor);
+
             //    STDMETHOD(GetFormat)            (THIS_ LPWAVEFORMATEX pwfxFormat, DWORD dwSizeAllocated, LPDWORD pdwSizeWritten) PURE;
             void GetFormat();
+
             //    STDMETHOD(GetVolume)            (THIS_ LPLONG plVolume) PURE;
             [return: MarshalAs(UnmanagedType.I4)]
             int GetVolume();
+
             //    STDMETHOD(GetPan)               (THIS_ LPLONG plPan) PURE;
             void GetPan([Out] out uint pan);
+
             //    STDMETHOD(GetFrequency)         (THIS_ LPDWORD pdwFrequency) PURE;
             [return: MarshalAs(UnmanagedType.I4)]
             int GetFrequency();
+
             //    STDMETHOD(GetStatus)            (THIS_ LPDWORD pdwStatus) PURE;
             [return: MarshalAs(UnmanagedType.U4)]
             DirectSoundBufferStatus GetStatus();
+
             //    STDMETHOD(Initialize)           (THIS_ LPDIRECTSOUND pDirectSound, LPCDSBUFFERDESC pcDSBufferDesc) PURE;
             void Initialize([In, MarshalAs(UnmanagedType.Interface)] IDirectSound directSound, [In] BufferDescription desc);
+
             //    STDMETHOD(Lock)                 (THIS_ DWORD dwOffset, DWORD dwBytes, LPVOID *ppvAudioPtr1, LPDWORD pdwAudioBytes1,
             //                                           LPVOID *ppvAudioPtr2, LPDWORD pdwAudioBytes2, DWORD dwFlags) PURE;
             void Lock(int dwOffset, uint dwBytes, [Out] out IntPtr audioPtr1, [Out] out int audioBytes1, [Out] out IntPtr audioPtr2, [Out] out int audioBytes2, [MarshalAs(UnmanagedType.U4)] DirectSoundBufferLockFlag dwFlags);
+
             //    STDMETHOD(Play)                 (THIS_ DWORD dwReserved1, DWORD dwPriority, DWORD dwFlags) PURE;
             void Play(uint dwReserved1, uint dwPriority, [In, MarshalAs(UnmanagedType.U4)] DirectSoundPlayFlags dwFlags);
+
             //    STDMETHOD(SetCurrentPosition)   (THIS_ DWORD dwNewPosition) PURE;
             void SetCurrentPosition(uint dwNewPosition);
+
             //    STDMETHOD(SetFormat)            (THIS_ LPCWAVEFORMATEX pcfxFormat) PURE;
             void SetFormat([In] WaveFormat pcfxFormat);
+
             //    STDMETHOD(SetVolume)            (THIS_ LONG lVolume) PURE;
             void SetVolume(int volume);
+
             //    STDMETHOD(SetPan)               (THIS_ LONG lPan) PURE;
             void SetPan(uint pan);
+
             //    STDMETHOD(SetFrequency)         (THIS_ DWORD dwFrequency) PURE;
             void SetFrequency(uint frequency);
+
             //    STDMETHOD(Stop)                 (THIS) PURE;
             void Stop();
+
             //    STDMETHOD(Unlock)               (THIS_ LPVOID pvAudioPtr1, DWORD dwAudioBytes1, LPVOID pvAudioPtr2, DWORD dwAudioBytes2) PURE;
             void Unlock(IntPtr pvAudioPtr1, int dwAudioBytes1, IntPtr pvAudioPtr2, int dwAudioBytes2);
+
             //    STDMETHOD(Restore)              (THIS) PURE;
             void Restore();
         }
@@ -808,14 +831,13 @@ namespace NAudio.Wave
         /// <param name="directSound">The direct sound.</param>
         /// <param name="pUnkOuter">The p unk outer.</param>
         [DllImport("dsound.dll", EntryPoint = "DirectSoundCreate", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        static extern void DirectSoundCreate(ref Guid GUID, [Out, MarshalAs(UnmanagedType.Interface)] out IDirectSound directSound, IntPtr pUnkOuter);
-
+        private static extern void DirectSoundCreate(ref Guid GUID, [Out, MarshalAs(UnmanagedType.Interface)] out IDirectSound directSound, IntPtr pUnkOuter);
 
         /// <summary>
-        /// DirectSound default playback device GUID 
+        /// DirectSound default playback device GUID
         /// </summary>
         public static readonly Guid DSDEVID_DefaultPlayback = new Guid("DEF00000-9C6D-47ED-AAF1-4DDA8F2B5C03");
-        
+
         /// <summary>
         /// DirectSound default capture device GUID
         /// </summary>
@@ -832,7 +854,7 @@ namespace NAudio.Wave
         public static readonly Guid DSDEVID_DefaultVoiceCapture = new Guid("DEF00003-9C6D-47ED-AAF1-4DDA8F2B5C03");
 
         /// <summary>
-        /// The DSEnumCallback function is an application-defined callback function that enumerates the DirectSound drivers. 
+        /// The DSEnumCallback function is an application-defined callback function that enumerates the DirectSound drivers.
         /// The system calls this function in response to the application's call to the DirectSoundEnumerate or DirectSoundCaptureEnumerate function.
         /// </summary>
         /// <param name="lpGuid">Address of the GUID that identifies the device being enumerated, or NULL for the primary device. This value can be passed to the DirectSoundCreate8 or DirectSoundCaptureCreate8 function to create a device object for that driver. </param>
@@ -840,7 +862,7 @@ namespace NAudio.Wave
         /// <param name="lpcstrModule">Address of a null-terminated string that specifies the module name of the DirectSound driver corresponding to this device. </param>
         /// <param name="lpContext">Address of application-defined data. This is the pointer passed to DirectSoundEnumerate or DirectSoundCaptureEnumerate as the lpContext parameter. </param>
         /// <returns>Returns TRUE to continue enumerating drivers, or FALSE to stop.</returns>
-        delegate bool DSEnumCallback(IntPtr lpGuid, IntPtr lpcstrDescription, IntPtr lpcstrModule, IntPtr lpContext);
+        private delegate bool DSEnumCallback(IntPtr lpGuid, IntPtr lpcstrDescription, IntPtr lpcstrModule, IntPtr lpContext);
 
         /// <summary>
         /// The DirectSoundEnumerate function enumerates the DirectSound drivers installed in the system.
@@ -848,7 +870,7 @@ namespace NAudio.Wave
         /// <param name="lpDSEnumCallback">callback function</param>
         /// <param name="lpContext">User context</param>
         [DllImport("dsound.dll", EntryPoint = "DirectSoundEnumerateA", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        static extern void DirectSoundEnumerate(DSEnumCallback lpDSEnumCallback, IntPtr lpContext);
+        private static extern void DirectSoundEnumerate(DSEnumCallback lpDSEnumCallback, IntPtr lpContext);
 
         /// <summary>
         /// Gets the HANDLE of the desktop window.
@@ -856,7 +878,8 @@ namespace NAudio.Wave
         /// <returns>HANDLE of the Desktop window</returns>
         [DllImport("user32.dll")]
         private static extern IntPtr GetDesktopWindow();
-        #endregion
+
+        #endregion Native DirectSound COM Interface
     }
 
     /// <summary>
@@ -868,14 +891,15 @@ namespace NAudio.Wave
         /// The device identifier
         /// </summary>
         public Guid Guid { get; set; }
+
         /// <summary>
         /// Device description
         /// </summary>
         public string Description { get; set; }
+
         /// <summary>
         /// Device module name
         /// </summary>
         public string ModuleName { get; set; }
     }
-
 }

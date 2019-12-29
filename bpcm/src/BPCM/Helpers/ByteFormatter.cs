@@ -2,7 +2,7 @@
 
 namespace BPCM.Helpers
 {
-    static class ByteFormatter
+    internal static class ByteFormatter
     {
         static public string FormatBytes(long bytes)
         {

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using NAudio.Dmo;
+using System;
 using System.Runtime.InteropServices;
-using NAudio.Dmo;
 
 namespace NAudio.Wave
 {
@@ -10,17 +8,17 @@ namespace NAudio.Wave
     /// WaveFormatExtensible
     /// http://www.microsoft.com/whdc/device/audio/multichaud.mspx
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 2)]	
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 2)]
     public class WaveFormatExtensible : WaveFormat
-    {        
-        short wValidBitsPerSample; // bits of precision, or is wSamplesPerBlock if wBitsPerSample==0
-        int dwChannelMask; // which channels are present in stream
-        Guid subFormat;
+    {
+        private short wValidBitsPerSample; // bits of precision, or is wSamplesPerBlock if wBitsPerSample==0
+        private int dwChannelMask; // which channels are present in stream
+        private Guid subFormat;
 
         /// <summary>
         /// Parameterless constructor for marshalling
         /// </summary>
-        WaveFormatExtensible()
+        private WaveFormatExtensible()
         {
         }
 
@@ -32,7 +30,7 @@ namespace NAudio.Wave
         {
             waveFormatTag = WaveFormatEncoding.Extensible;
             extraSize = 22;
-            wValidBitsPerSample = (short) bits;
+            wValidBitsPerSample = (short)bits;
             for (int n = 0; n < channels; n++)
             {
                 dwChannelMask |= (1 << n);
@@ -47,7 +45,6 @@ namespace NAudio.Wave
                 // KSDATAFORMAT_SUBTYPE_PCM
                 subFormat = AudioMediaSubtypes.MEDIASUBTYPE_PCM; // new Guid("00000001-0000-0010-8000-00aa00389b71");
             }
-
         }
 
         /// <summary>
@@ -60,7 +57,7 @@ namespace NAudio.Wave
             if (subFormat == AudioMediaSubtypes.MEDIASUBTYPE_IEEE_FLOAT && bitsPerSample == 32)
                 return CreateIeeeFloatWaveFormat(sampleRate, channels);
             if (subFormat == AudioMediaSubtypes.MEDIASUBTYPE_PCM)
-                return new WaveFormat(sampleRate,bitsPerSample,channels);
+                return new WaveFormat(sampleRate, bitsPerSample, channels);
             throw new InvalidOperationException("Not a recognised PCM or IEEE float format");
         }
 

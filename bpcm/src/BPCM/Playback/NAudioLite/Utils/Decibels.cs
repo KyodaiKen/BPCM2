@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NAudio.Utils
 {
@@ -34,6 +32,5 @@ namespace NAudio.Utils
         {
             return Math.Exp(dB * DB_2_LOG);
         }
-
     }
 }

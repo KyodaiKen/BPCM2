@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace BPCM
 {
     public enum ModeE
     {
-        MODE_ENCODE=0,
-        MODE_DECODE=1
+        MODE_ENCODE = 0,
+        MODE_DECODE = 1
     }
 
     public abstract class AbstractModel
@@ -40,9 +36,10 @@ namespace BPCM
         }
 
         protected abstract void Encode();
-	    protected abstract void Decode();
 
-	    protected ArithmeticCoderCS mAC = new ArithmeticCoderCS();
+        protected abstract void Decode();
+
+        protected ArithmeticCoderCS mAC = new ArithmeticCoderCS();
         protected Stream mSource;
         protected Stream mTarget;
     }

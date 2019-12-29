@@ -6,11 +6,11 @@ namespace NAudio.Wave
     /// <summary>
     /// WaveBuffer class use to store wave datas. Data can be manipulated with arrays
     /// (<see cref="ByteBuffer"/>,<see cref="FloatBuffer"/>,<see cref="ShortBuffer"/>,<see cref="IntBuffer"/> ) that are pointing to the
-    /// same memory buffer. Use the associated Count property based on the type of buffer to get the number of 
+    /// same memory buffer. Use the associated Count property based on the type of buffer to get the number of
     /// data in the buffer.
     /// Implicit casting is now supported to float[], byte[], int[], short[].
     /// You must not use Length on returned arrays.
-    /// 
+    ///
     /// n.b. FieldOffset is 8 now to allow it to work natively on 64 bit
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Pack = 2)]
@@ -21,12 +21,16 @@ namespace NAudio.Wave
         /// </summary>
         [FieldOffset(0)]
         public int numberOfBytes;
+
         [FieldOffset(8)]
         private byte[] byteBuffer;
+
         [FieldOffset(8)]
         private float[] floatBuffer;
+
         [FieldOffset(8)]
         private short[] shortBuffer;
+
         [FieldOffset(8)]
         private int[] intBuffer;
 
@@ -36,7 +40,7 @@ namespace NAudio.Wave
         /// <param name="sizeToAllocateInBytes">The number of bytes. The size of the final buffer will be aligned on 4 Bytes (upper bound)</param>
         public WaveBuffer(int sizeToAllocateInBytes)
         {
-            int aligned4Bytes = sizeToAllocateInBytes%4;
+            int aligned4Bytes = sizeToAllocateInBytes % 4;
             sizeToAllocateInBytes = (aligned4Bytes == 0) ? sizeToAllocateInBytes : sizeToAllocateInBytes + 4 - aligned4Bytes;
             // Allocating the byteBuffer is co-allocating the floatBuffer and the intBuffer
             byteBuffer = new byte[sizeToAllocateInBytes];
@@ -57,7 +61,7 @@ namespace NAudio.Wave
         /// </summary>
         /// <param name="bufferToBoundTo">A byte buffer to bound the WaveBuffer to.</param>
         public void BindTo(byte[] bufferToBoundTo)
-        {   
+        {
             /* WaveBuffer assumes the caller knows what they are doing. We will let this pass
              * if ( (bufferToBoundTo.Length % 4) != 0 )
             {
@@ -143,7 +147,6 @@ namespace NAudio.Wave
             get { return intBuffer; }
         }
 
-
         /// <summary>
         /// Gets the max size in bytes of the byte buffer..
         /// </summary>
@@ -165,6 +168,7 @@ namespace NAudio.Wave
                 numberOfBytes = CheckValidityCount("ByteBufferCount", value, 1);
             }
         }
+
         /// <summary>
         /// Gets or sets the float buffer count.
         /// </summary>
@@ -177,6 +181,7 @@ namespace NAudio.Wave
                 numberOfBytes = CheckValidityCount("FloatBufferCount", value, 4);
             }
         }
+
         /// <summary>
         /// Gets or sets the short buffer count.
         /// </summary>
@@ -189,6 +194,7 @@ namespace NAudio.Wave
                 numberOfBytes = CheckValidityCount("ShortBufferCount", value, 2);
             }
         }
+
         /// <summary>
         /// Gets or sets the int buffer count.
         /// </summary>
@@ -227,7 +233,7 @@ namespace NAudio.Wave
         private int CheckValidityCount(string argName, int value, int sizeOfValue)
         {
             int newNumberOfBytes = value * sizeOfValue;
-            if ( (newNumberOfBytes % 4) != 0 )
+            if ((newNumberOfBytes % 4) != 0)
             {
                 throw new ArgumentOutOfRangeException(argName, String.Format("{0} cannot set a count ({1}) that is not 4 bytes aligned ", argName, newNumberOfBytes));
             }

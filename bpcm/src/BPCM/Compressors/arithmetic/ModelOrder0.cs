@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace BPCM
+﻿namespace BPCM
 {
     public class ModelOrder0 : AbstractModel
     {
@@ -21,14 +16,14 @@ namespace BPCM
 
         protected override void Encode()
         {
-            int readInt=0;
+            int readInt = 0;
             while (readInt != -1) // EOF
             {
                 byte symbol;
                 // read symbol
                 readInt = mSource.ReadByte();
                 symbol = (byte)readInt;
-                
+
                 if (readInt != -1) // EOF
                 {
                     uint low_count = 0;
@@ -62,9 +57,9 @@ namespace BPCM
                 // read value
                 value = mAC.DecodeTarget(mTotal);
 
-                uint low_count=0;
+                uint low_count = 0;
                 // determine symbol
-                for( symbol=0; symbol <= 256 && low_count + mCumCount[symbol] <= value; symbol++ )
+                for (symbol = 0; symbol <= 256 && low_count + mCumCount[symbol] <= value; symbol++)
                     low_count += mCumCount[symbol];
 
                 // Write symbol, if it was not terminator
@@ -74,13 +69,12 @@ namespace BPCM
                 if (symbol > 256) symbol = 256;
 
                 // adapt decoder
-                mAC.Decode( low_count, low_count + mCumCount[symbol] );
+                mAC.Decode(low_count, low_count + mCumCount[symbol]);
 
                 // update model
                 mCumCount[symbol]++;
                 mTotal++;
-            }while(symbol != 256); // until terminator
-            
+            } while (symbol != 256); // until terminator
         }
     }
 }

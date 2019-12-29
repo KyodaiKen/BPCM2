@@ -27,7 +27,6 @@
 //
 // ------------------------------------------------------------------
 
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE stream
@@ -52,7 +51,6 @@
  * <keiron@aftexsw.com> to whom the Ant project is very grateful for his
  * great code.
  */
-
 
 //
 // Design notes:
@@ -85,7 +83,6 @@
 //
 
 using System;
-using System.IO;
 
 // flymake: csc.exe /t:module BZip2InputStream.cs BZip2OutputStream.cs Rand.cs BCRC32.cs @@FILE@@
 
@@ -100,8 +97,8 @@ namespace Ionic.BZip2
         private int outBlockFillThreshold;
         private CompressionState cstate;
         private readonly Ionic.Crc.CRC32 crc = new Ionic.Crc.CRC32(true);
-        BitWriter bw;
-        int runs;
+        private BitWriter bw;
+        private int runs;
 
         /*
          * The following three vars are used when sorting. If too many long
@@ -132,6 +129,7 @@ namespace Ionic.BZip2
          * Possibly because the number of elems to sort is usually small, typically
          * &lt;= 20.
          */
+
         private static readonly int[] increments = { 1, 4, 13, 40, 121, 364, 1093, 3280,
                                                      9841, 29524, 88573, 265720, 797161,
                                                      2391484 };
@@ -160,8 +158,7 @@ namespace Ionic.BZip2
             Reset();
         }
 
-
-        void Reset()
+        private void Reset()
         {
             // initBlock();
             this.crc.Reset();
@@ -172,7 +169,6 @@ namespace Ionic.BZip2
                 this.cstate.inUse[i] = false;
             //bw.Reset();  xxx? want this?  no no no
         }
-
 
         public int BlockSize
         {
@@ -208,7 +204,6 @@ namespace Ionic.BZip2
             get { return this.last + 1; }
         }
 
-
         /// <summary>
         ///   Accept new bytes into the compressor data buffer
         /// </summary>
@@ -236,8 +231,6 @@ namespace Ionic.BZip2
 
             return bytesWritten;
         }
-
-
 
         /// <summary>
         ///   Process one input byte into the block.
@@ -342,7 +335,7 @@ namespace Ionic.BZip2
             // rle block. For those two reasons, the base offset from last is
             // always +2.
 
-            byte b = (byte) this.currentByte;
+            byte b = (byte)this.currentByte;
             byte[] block = this.cstate.block;
             this.cstate.inUse[b] = true;
             int rl = this.runLength;
@@ -375,7 +368,7 @@ namespace Ionic.BZip2
                     block[previousLast + 3] = b;
                     block[previousLast + 4] = b;
                     block[previousLast + 5] = b;
-                    block[previousLast + 6] = (byte) rl;
+                    block[previousLast + 6] = (byte)rl;
                     this.last = previousLast + 5;
                     break;
             }
@@ -383,7 +376,6 @@ namespace Ionic.BZip2
             // is full?
             return (this.last >= this.outBlockFillThreshold);
         }
-
 
         /// <summary>
         ///   clist the data that has been placed (Run-length-encoded) into the
@@ -430,18 +422,17 @@ namespace Ionic.BZip2
             this.bw.WriteByte(0x53);
             this.bw.WriteByte(0x59);
 
-            this.Crc32 = (uint) this.crc.Crc32Result;
+            this.Crc32 = (uint)this.crc.Crc32Result;
             this.bw.WriteInt(this.Crc32);
 
             /* Now a single bit indicating randomisation. */
-            this.bw.WriteBits(1, (this.blockRandomised)?1U:0U);
+            this.bw.WriteBits(1, (this.blockRandomised) ? 1U : 0U);
 
             /* Finally, block's contents proper. */
             moveToFrontCodeAndSend();
 
             Reset();
         }
-
 
         private void randomiseBlock()
         {
@@ -458,7 +449,7 @@ namespace Ionic.BZip2
             {
                 if (rNToGo == 0)
                 {
-                    rNToGo = (char) Rand.Rnums(rTPos);
+                    rNToGo = (char)Rand.Rnums(rTPos);
                     if (++rTPos == 512)
                     {
                         rTPos = 0;
@@ -466,7 +457,7 @@ namespace Ionic.BZip2
                 }
 
                 rNToGo--;
-                block[j] ^= (byte) ((rNToGo == 1) ? 1 : 0);
+                block[j] ^= (byte)((rNToGo == 1) ? 1 : 0);
 
                 // handle 16 bit signed numbers
                 inUse[block[j] & 0xff] = true;
@@ -504,7 +495,7 @@ namespace Ionic.BZip2
             {
                 block[lastShadow + i + 2] = block[(i % (lastShadow + 1)) + 1];
             }
-            for (int i = lastShadow + BZip2.NUM_OVERSHOOT_BYTES +1; --i >= 0;)
+            for (int i = lastShadow + BZip2.NUM_OVERSHOOT_BYTES + 1; --i >= 0;)
             {
                 quadrant[i] = '\0';
             }
@@ -651,7 +642,7 @@ namespace Ionic.BZip2
                     for (int j = 0; j < bbSize; j++)
                     {
                         int a2update = fmap[bbStart + j];
-                        char qVal = (char) (j >> shifts);
+                        char qVal = (char)(j >> shifts);
                         quadrant[a2update] = qVal;
                         if (a2update < BZip2.NUM_OVERSHOOT_BYTES)
                         {
@@ -659,10 +650,8 @@ namespace Ionic.BZip2
                         }
                     }
                 }
-
             }
         }
-
 
         private void blockSort()
         {
@@ -694,7 +683,6 @@ namespace Ionic.BZip2
             // assert (this.origPtr != -1) : this.origPtr;
         }
 
-
         /**
          * This is the most hammered method of this class.
          *
@@ -702,6 +690,7 @@ namespace Ionic.BZip2
          * This is the version using unrolled loops.
          * </p>
          */
+
         private bool mainSimpleSort(CompressionState dataShadow, int lo,
                                     int hi, int d)
         {
@@ -755,7 +744,7 @@ namespace Ionic.BZip2
                         bool onceRunned = false;
                         int a = 0;
 
-                        HAMMER: while (true)
+                    HAMMER: while (true)
                         {
                             if (onceRunned)
                             {
@@ -765,7 +754,8 @@ namespace Ionic.BZip2
                                     goto END_HAMMER;
                                 }
                             }
-                            else {
+                            else
+                            {
                                 onceRunned = true;
                             }
 
@@ -788,7 +778,7 @@ namespace Ionic.BZip2
                                                 if (block[(i1 += 6)] == block[(i2 += 6)])
                                                 {
                                                     int x = lastShadow;
-                                                    X: while (x > 0)
+                                                X: while (x > 0)
                                                     {
                                                         x -= 4;
 
@@ -823,7 +813,8 @@ namespace Ionic.BZip2
                                                                                     {
                                                                                         goto HAMMER;
                                                                                     }
-                                                                                    else {
+                                                                                    else
+                                                                                    {
                                                                                         goto END_HAMMER;
                                                                                     }
                                                                                 }
@@ -831,7 +822,8 @@ namespace Ionic.BZip2
                                                                                 {
                                                                                     goto HAMMER;
                                                                                 }
-                                                                                else {
+                                                                                else
+                                                                                {
                                                                                     goto END_HAMMER;
                                                                                 }
                                                                             }
@@ -839,7 +831,8 @@ namespace Ionic.BZip2
                                                                             {
                                                                                 goto HAMMER;
                                                                             }
-                                                                            else {
+                                                                            else
+                                                                            {
                                                                                 goto END_HAMMER;
                                                                             }
                                                                         }
@@ -847,7 +840,8 @@ namespace Ionic.BZip2
                                                                         {
                                                                             goto HAMMER;
                                                                         }
-                                                                        else {
+                                                                        else
+                                                                        {
                                                                             goto END_HAMMER;
                                                                         }
                                                                     }
@@ -855,7 +849,8 @@ namespace Ionic.BZip2
                                                                     {
                                                                         goto HAMMER;
                                                                     }
-                                                                    else {
+                                                                    else
+                                                                    {
                                                                         goto END_HAMMER;
                                                                     }
                                                                 }
@@ -863,7 +858,8 @@ namespace Ionic.BZip2
                                                                 {
                                                                     goto HAMMER;
                                                                 }
-                                                                else {
+                                                                else
+                                                                {
                                                                     goto END_HAMMER;
                                                                 }
                                                             }
@@ -871,7 +867,8 @@ namespace Ionic.BZip2
                                                             {
                                                                 goto HAMMER;
                                                             }
-                                                            else {
+                                                            else
+                                                            {
                                                                 goto END_HAMMER;
                                                             }
                                                         }
@@ -879,19 +876,21 @@ namespace Ionic.BZip2
                                                         {
                                                             goto HAMMER;
                                                         }
-                                                        else {
+                                                        else
+                                                        {
                                                             goto END_HAMMER;
                                                         }
-
                                                     }
                                                     goto END_HAMMER;
                                                 } // while x > 0
-                                                else {
+                                                else
+                                                {
                                                     if ((block[i1] & 0xff) > (block[i2] & 0xff))
                                                     {
                                                         goto HAMMER;
                                                     }
-                                                    else {
+                                                    else
+                                                    {
                                                         goto END_HAMMER;
                                                     }
                                                 }
@@ -900,7 +899,8 @@ namespace Ionic.BZip2
                                             {
                                                 goto HAMMER;
                                             }
-                                            else {
+                                            else
+                                            {
                                                 goto END_HAMMER;
                                             }
                                         }
@@ -908,7 +908,8 @@ namespace Ionic.BZip2
                                         {
                                             goto HAMMER;
                                         }
-                                        else {
+                                        else
+                                        {
                                             goto END_HAMMER;
                                         }
                                     }
@@ -916,7 +917,8 @@ namespace Ionic.BZip2
                                     {
                                         goto HAMMER;
                                     }
-                                    else {
+                                    else
+                                    {
                                         goto END_HAMMER;
                                     }
                                 }
@@ -924,7 +926,8 @@ namespace Ionic.BZip2
                                 {
                                     goto HAMMER;
                                 }
-                                else {
+                                else
+                                {
                                     goto END_HAMMER;
                                 }
                             }
@@ -932,13 +935,13 @@ namespace Ionic.BZip2
                             {
                                 goto HAMMER;
                             }
-                            else {
+                            else
+                            {
                                 goto END_HAMMER;
                             }
-
                         } // HAMMER
 
-                        END_HAMMER:
+                    END_HAMMER:
                         // end inline mainGTU
 
                         fmap[j] = v;
@@ -951,13 +954,11 @@ namespace Ionic.BZip2
                     }
                 }
             }
-            END_HP:
+        END_HP:
 
             this.workDone = workDoneShadow;
             return firstAttemptShadow && (workDoneShadow > workLimitShadow);
         }
-
-
 
         private static void vswap(int[] fmap, int p1, int p2, int n)
         {
@@ -976,10 +977,10 @@ namespace Ionic.BZip2
                                                             : a);
         }
 
-
         /**
          * Method "mainQSort3", stream "blocksort.clist", BZip2 1.0.2
          */
+
         private void mainQSort3(CompressionState dataShadow, int loSt,
                                 int hiSt, int dSt)
         {
@@ -1006,7 +1007,8 @@ namespace Ionic.BZip2
                         return;
                     }
                 }
-                else {
+                else
+                {
                     int d1 = d + 1;
                     int med = med3(block[fmap[lo] + d1],
                                    block[fmap[hi] + d1], block[fmap[(lo + hi) >> 1] + d1]) & 0xff;
@@ -1032,7 +1034,8 @@ namespace Ionic.BZip2
                             {
                                 unLo++;
                             }
-                            else {
+                            else
+                            {
                                 break;
                             }
                         }
@@ -1051,7 +1054,8 @@ namespace Ionic.BZip2
                             {
                                 unHi--;
                             }
-                            else {
+                            else
+                            {
                                 break;
                             }
                         }
@@ -1062,7 +1066,8 @@ namespace Ionic.BZip2
                             fmap[unLo++] = fmap[unHi];
                             fmap[unHi--] = temp;
                         }
-                        else {
+                        else
+                        {
                             break;
                         }
                     }
@@ -1074,7 +1079,8 @@ namespace Ionic.BZip2
                         stack_dd[sp] = d1;
                         sp++;
                     }
-                    else {
+                    else
+                    {
                         int n = ((ltLo - lo) < (unLo - ltLo)) ? (ltLo - lo)
                             : (unLo - ltLo);
                         vswap(fmap, lo, unLo - n, n);
@@ -1104,8 +1110,6 @@ namespace Ionic.BZip2
             }
         }
 
-
-
         private void generateMTFValues()
         {
             int lastShadow = this.last;
@@ -1124,7 +1128,7 @@ namespace Ionic.BZip2
             {
                 if (inUse[i])
                 {
-                    unseqToSeq[i] = (byte) nInUseShadow;
+                    unseqToSeq[i] = (byte)nInUseShadow;
                     nInUseShadow++;
                 }
             }
@@ -1139,7 +1143,7 @@ namespace Ionic.BZip2
 
             for (int i = nInUseShadow; --i >= 0;)
             {
-                yy[i] = (byte) i;
+                yy[i] = (byte)i;
             }
 
             int wr = 0;
@@ -1195,7 +1199,7 @@ namespace Ionic.BZip2
                         }
                         zPend = 0;
                     }
-                    sfmap[wr] = (char) (j + 1);
+                    sfmap[wr] = (char)(j + 1);
                     wr++;
                     mtfFreq[j + 1]++;
                 }
@@ -1230,13 +1234,12 @@ namespace Ionic.BZip2
                 }
             }
 
-            sfmap[wr] = (char) eob;
+            sfmap[wr] = (char)eob;
             mtfFreq[eob]++;
             this.nMTF = wr + 1;
         }
 
-
-        private static void hbAssignCodes(int[] code,  byte[] length,
+        private static void hbAssignCodes(int[] code, byte[] length,
                                           int minLen, int maxLen,
                                           int alphaSize)
         {
@@ -1254,9 +1257,6 @@ namespace Ionic.BZip2
                 vec <<= 1;
             }
         }
-
-
-
 
         private void sendMTFValues()
         {
@@ -1336,7 +1336,8 @@ namespace Ionic.BZip2
                     {
                         len_np[v] = LESSER_ICOST;
                     }
-                    else {
+                    else
+                    {
                         len_np[v] = GREATER_ICOST;
                     }
                 }
@@ -1346,8 +1347,7 @@ namespace Ionic.BZip2
             }
         }
 
-
-        private static void hbMakeCodeLengths(byte[] len,  int[] freq,
+        private static void hbMakeCodeLengths(byte[] len, int[] freq,
                                               CompressionState state1, int alphaSize,
                                               int maxLen)
         {
@@ -1464,7 +1464,7 @@ namespace Ionic.BZip2
 
                     int weight_n1 = weight[n1];
                     int weight_n2 = weight[n2];
-                    weight[nNodes] = (int) (((uint)weight_n1 & 0xffffff00U)
+                    weight[nNodes] = (int)(((uint)weight_n1 & 0xffffff00U)
                                             + ((uint)weight_n2 & 0xffffff00U))
                         | (1 + (((weight_n1 & 0x000000ff)
                                  > (weight_n2 & 0x000000ff))
@@ -1485,7 +1485,6 @@ namespace Ionic.BZip2
                         zz >>= 1;
                     }
                     heap[zz] = tmp;
-
                 }
 
                 for (int i = 1; i <= alphaSize; i++)
@@ -1499,7 +1498,7 @@ namespace Ionic.BZip2
                         j++;
                     }
 
-                    len[i - 1] = (byte) j;
+                    len[i - 1] = (byte)j;
                     if (j > maxLen)
                     {
                         tooLong = true;
@@ -1517,7 +1516,6 @@ namespace Ionic.BZip2
                 }
             }
         }
-
 
         private int sendMTFValues1(int nGroups, int alphaSize)
         {
@@ -1580,12 +1578,12 @@ namespace Ionic.BZip2
                             c[5] += len_5[icv] & 0xff;
                         }
 
-                        cost[0] = (short) c[0];
-                        cost[1] = (short) c[1];
-                        cost[2] = (short) c[2];
-                        cost[3] = (short) c[3];
-                        cost[4] = (short) c[4];
-                        cost[5] = (short) c[5];
+                        cost[0] = (short)c[0];
+                        cost[1] = (short)c[1];
+                        cost[2] = (short)c[2];
+                        cost[3] = (short)c[3];
+                        cost[4] = (short)c[4];
+                        cost[5] = (short)c[5];
                     }
                     else
                     {
@@ -1599,7 +1597,7 @@ namespace Ionic.BZip2
                             int icv = sfmap[i];
                             for (int t = nGroups; --t >= 0;)
                             {
-                                cost[t] += (short) (len[t][icv] & 0xff);
+                                cost[t] += (short)(len[t][icv] & 0xff);
                             }
                         }
                     }
@@ -1620,7 +1618,7 @@ namespace Ionic.BZip2
                     }
 
                     fave[bt]++;
-                    selector[nSelectors] = (byte) bt;
+                    selector[nSelectors] = (byte)bt;
                     nSelectors++;
 
                     /*
@@ -1656,7 +1654,7 @@ namespace Ionic.BZip2
 
             for (int i = nGroups; --i >= 0;)
             {
-                pos[i] = (byte) i;
+                pos[i] = (byte)i;
             }
 
             for (int i = 0; i < nSelectors; i++)
@@ -1674,7 +1672,7 @@ namespace Ionic.BZip2
                 }
 
                 pos[0] = tmp;
-                dataShadow.selectorMtf[i] = (byte) j;
+                dataShadow.selectorMtf[i] = (byte)j;
             }
         }
 
@@ -1734,7 +1732,6 @@ namespace Ionic.BZip2
             }
             this.bw.WriteBits(16, u);
 
-
             for (int i = 0; i < 16; i++)
             {
                 if (inUse16[i])
@@ -1753,11 +1750,10 @@ namespace Ionic.BZip2
             }
         }
 
-
         private void sendMTFValues5(int nGroups, int nSelectors)
         {
-            this.bw.WriteBits(3, (uint) nGroups);
-            this.bw.WriteBits(15, (uint) nSelectors);
+            this.bw.WriteBits(3, (uint)nGroups);
+            this.bw.WriteBits(15, (uint)nSelectors);
 
             byte[] selectorMtf = this.cstate.selectorMtf;
 
@@ -1779,7 +1775,7 @@ namespace Ionic.BZip2
             for (int t = 0; t < nGroups; t++)
             {
                 byte[] len_t = len[t];
-                uint curr = (uint) (len_t[0] & 0xff);
+                uint curr = (uint)(len_t[0] & 0xff);
                 this.bw.WriteBits(5, curr);
 
                 for (int i = 0; i < alphaSize; i++)
@@ -1802,14 +1798,13 @@ namespace Ionic.BZip2
             }
         }
 
-
         private void sendMTFValues7(int nSelectors)
         {
-            byte[][] len    = this.cstate.sendMTFValues_len;
-            int[][] code    = this.cstate.sendMTFValues_code;
+            byte[][] len = this.cstate.sendMTFValues_len;
+            int[][] code = this.cstate.sendMTFValues_code;
             byte[] selector = this.cstate.selector;
-            char[] sfmap    = this.cstate.sfmap;
-            int nMTFShadow  = this.nMTF;
+            char[] sfmap = this.cstate.sfmap;
+            int nMTFShadow = this.nMTF;
 
             int selCtr = 0;
 
@@ -1824,7 +1819,7 @@ namespace Ionic.BZip2
                 {
                     int sfmap_i = sfmap[gs];
                     int n = len_selCtr[sfmap_i] & 0xFF;
-                    this.bw.WriteBits(n, (uint) code_selCtr[sfmap_i]);
+                    this.bw.WriteBits(n, (uint)code_selCtr[sfmap_i]);
                     gs++;
                 }
 
@@ -1835,20 +1830,16 @@ namespace Ionic.BZip2
 
         private void moveToFrontCodeAndSend()
         {
-            this.bw.WriteBits(24, (uint) this.origPtr);
+            this.bw.WriteBits(24, (uint)this.origPtr);
             generateMTFValues();
             sendMTFValues();
         }
-
-
-
-
-
 
         private class CompressionState
         {
             // with blockSize 900k
             public readonly bool[] inUse = new bool[256]; // 256 byte
+
             public readonly byte[] unseqToSeq = new byte[256]; // 256 byte
             public readonly int[] mtfFreq = new int[BZip2.MaxAlphaSize]; // 1032 byte
             public readonly byte[] selector = new byte[BZip2.MaxSelectors]; // 18002 byte
@@ -1862,11 +1853,13 @@ namespace Ionic.BZip2
 
             // byte
             public readonly int[] sendMTFValues_fave = new int[BZip2.NGroups]; // 24 byte
+
             public readonly short[] sendMTFValues_cost = new short[BZip2.NGroups]; // 12 byte
             public int[][] sendMTFValues_code;
 
             // byte
             public readonly byte[] sendMTFValues2_pos = new byte[BZip2.NGroups]; // 6 byte
+
             public readonly bool[] sentMTFValues4_inUse16 = new bool[16]; // 16 byte
 
             public readonly int[] stack_ll = new int[BZip2.QSORT_STACK_SIZE]; // 4000 byte
@@ -1907,14 +1900,10 @@ namespace Ionic.BZip2
                 this.fmap = new int[n];
                 this.sfmap = new char[2 * n];
                 this.quadrant = this.sfmap;
-                this.sendMTFValues_len = BZip2.InitRectangularArray<byte>(BZip2.NGroups,BZip2.MaxAlphaSize);
-                this.sendMTFValues_rfreq = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
-                this.sendMTFValues_code = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
+                this.sendMTFValues_len = BZip2.InitRectangularArray<byte>(BZip2.NGroups, BZip2.MaxAlphaSize);
+                this.sendMTFValues_rfreq = BZip2.InitRectangularArray<int>(BZip2.NGroups, BZip2.MaxAlphaSize);
+                this.sendMTFValues_code = BZip2.InitRectangularArray<int>(BZip2.NGroups, BZip2.MaxAlphaSize);
             }
-
         }
-
-
-
     }
 }

@@ -52,22 +52,19 @@
 // compile: msbuild
 // not: csc.exe /t:library /debug+ /out:Ionic.BZip2.dll BZip2InputStream.cs BCRC32.cs Rand.cs
 
-
-
 using System;
 using System.IO;
 
 namespace Ionic.BZip2
 {
-
     /// <summary>
     ///   A read-only decorator stream that performs BZip2 decompression on Read.
     /// </summary>
     public class BZip2InputStream : System.IO.Stream
     {
-        bool _disposed;
-        bool _leaveOpen;
-        Int64 totalBytesRead;
+        private bool _disposed;
+        private bool _leaveOpen;
+        private Int64 totalBytesRead;
         private int last;
 
         /* for undoing the Burrows-Wheeler transform */
@@ -78,6 +75,7 @@ namespace Ionic.BZip2
         // This var name is a misnomer. The actual block size is 100000
         // * blockSize100k. (not 100k * blocksize100k)
         private int blockSize100k;
+
         private bool blockRandomised;
         private int bsBuff;
         private int bsLive;
@@ -89,7 +87,7 @@ namespace Ionic.BZip2
         /// <summary>
         ///   Compressor State
         /// </summary>
-        enum CState
+        private enum CState
         {
             EOF = 0,
             START_BLOCK = 1,
@@ -108,6 +106,7 @@ namespace Ionic.BZip2
 
         // Variables used by setup* methods exclusively
         private int su_count;
+
         private int su_ch2;
         private int su_chPrev;
         private int su_i2;
@@ -117,7 +116,6 @@ namespace Ionic.BZip2
         private int su_tPos;
         private char su_z;
         private BZip2InputStream.DecompressionState data;
-
 
         /// <summary>
         ///   Create a BZip2InputStream, wrapping it around the given input Stream.
@@ -130,8 +128,7 @@ namespace Ionic.BZip2
         /// <param name='input'>The stream from which to read compressed data</param>
         public BZip2InputStream(Stream input)
             : this(input, false)
-        {}
-
+        { }
 
         /// <summary>
         ///   Create a BZip2InputStream with the given stream, and
@@ -171,7 +168,6 @@ namespace Ionic.BZip2
         public BZip2InputStream(Stream input, bool leaveOpen)
             : base()
         {
-
             this.input = input;
             this._leaveOpen = leaveOpen;
             init();
@@ -213,12 +209,11 @@ namespace Ionic.BZip2
             if (this.input == null)
                 throw new IOException("the stream is not open");
 
-
             int hi = offset + count;
             int destOffset = offset;
             for (int b; (destOffset < hi) && ((b = ReadByte()) >= 0);)
             {
-                buffer[destOffset++] = (byte) b;
+                buffer[destOffset++] = (byte)b;
             }
 
             return (destOffset == offset) ? -1 : (destOffset - offset);
@@ -234,7 +229,7 @@ namespace Ionic.BZip2
             for (int i = 0; i < 256; i++)
             {
                 if (inUse[i])
-                    seqToUnseq[n++] = (byte) i;
+                    seqToUnseq[n++] = (byte)i;
             }
 
             this.nInUse = n;
@@ -285,9 +280,6 @@ namespace Ionic.BZip2
             return retChar;
         }
 
-
-
-
         /// <summary>
         /// Indicates whether the stream can be read.
         /// </summary>
@@ -303,7 +295,6 @@ namespace Ionic.BZip2
             }
         }
 
-
         /// <summary>
         /// Indicates whether the stream supports Seek operations.
         /// </summary>
@@ -314,7 +305,6 @@ namespace Ionic.BZip2
         {
             get { return false; }
         }
-
 
         /// <summary>
         /// Indicates whether the stream can be written.
@@ -397,7 +387,6 @@ namespace Ionic.BZip2
             throw new NotImplementedException();
         }
 
-
         /// <summary>
         ///   Dispose the stream.
         /// </summary>
@@ -421,8 +410,7 @@ namespace Ionic.BZip2
             }
         }
 
-
-        void init()
+        private void init()
         {
             if (null == this.input)
                 throw new IOException("No input Stream");
@@ -438,7 +426,7 @@ namespace Ionic.BZip2
 
             if ((blockSize < '1') || (blockSize > '9'))
                 throw new IOException("Stream is not BZip2 formatted: illegal "
-                                      + "blocksize " + (char) blockSize);
+                                      + "blocksize " + (char)blockSize);
 
             this.blockSize100k = blockSize - '0';
 
@@ -446,8 +434,7 @@ namespace Ionic.BZip2
             SetupBlock();
         }
 
-
-        void CheckMagicChar(char expected, int position)
+        private void CheckMagicChar(char expected, int position)
         {
             int magic = this.input.ReadByte();
             if (magic != (int)expected)
@@ -458,8 +445,7 @@ namespace Ionic.BZip2
             }
         }
 
-
-        void InitBlock()
+        private void InitBlock()
         {
             char magic0 = bsGetUByte();
             char magic1 = bsGetUByte();
@@ -504,7 +490,6 @@ namespace Ionic.BZip2
             }
         }
 
-
         private void EndBlock()
         {
             this.computedBlockCRC = (uint)this.crc.Crc32Result;
@@ -531,7 +516,6 @@ namespace Ionic.BZip2
             // Console.WriteLine(" combined CRC (after) : {0:X8}", this.computedCombinedCRC);
             // Console.WriteLine();
         }
-
 
         private void complete()
         {
@@ -568,7 +552,6 @@ namespace Ionic.BZip2
                 }
             }
         }
-
 
         /// <summary>
         ///   Read n bits from input, right justifying the result.
@@ -609,7 +592,6 @@ namespace Ionic.BZip2
             return (bsBuffShadow >> (bsLiveShadow - n)) & ((1 << n) - 1);
         }
 
-
         // private bool bsGetBit()
         // {
         //     int bsLiveShadow = this.bsLive;
@@ -641,7 +623,7 @@ namespace Ionic.BZip2
 
         private char bsGetUByte()
         {
-            return (char) GetBits(8);
+            return (char)GetBits(8);
         }
 
         private uint bsGetInt()
@@ -649,12 +631,12 @@ namespace Ionic.BZip2
             return (uint)((((((GetBits(8) << 8) | GetBits(8)) << 8) | GetBits(8)) << 8) | GetBits(8));
         }
 
-
         /**
          * Called by createHuffmanDecodingTables() exclusively.
          */
+
         private static void hbCreateDecodeTables(int[] limit,
-                                                 int[] bbase, int[] perm,  char[] length,
+                                                 int[] bbase, int[] perm, char[] length,
                                                  int minLen, int maxLen, int alphaSize)
         {
             for (int i = minLen, pp = 0; i <= maxLen; i++)
@@ -685,7 +667,7 @@ namespace Ionic.BZip2
                 bbase[i] = b;
             }
 
-            for (int i = minLen, vec = 0, b =  bbase[i]; i <= maxLen; i++)
+            for (int i = minLen, vec = 0, b = bbase[i]; i <= maxLen; i++)
             {
                 int nb = bbase[i + 1];
                 vec += nb - b;
@@ -699,8 +681,6 @@ namespace Ionic.BZip2
                 bbase[i] = ((limit[i - 1] + 1) << 1) - bbase[i];
             }
         }
-
-
 
         private void recvDecodingTables()
         {
@@ -754,13 +734,13 @@ namespace Ionic.BZip2
                 {
                     j++;
                 }
-                s.selectorMtf[i] = (byte) j;
+                s.selectorMtf[i] = (byte)j;
             }
 
             /* Undo the MTF values for the selectors. */
             for (int v = nGroups; --v >= 0;)
             {
-                pos[v] = (byte) v;
+                pos[v] = (byte)v;
             }
 
             for (int i = 0; i < nSelectors; i++)
@@ -790,7 +770,7 @@ namespace Ionic.BZip2
                     {
                         curr += bsGetBit() ? -1 : 1;
                     }
-                    len_t[i] = (char) curr;
+                    len_t[i] = (char)curr;
                 }
             }
 
@@ -798,10 +778,10 @@ namespace Ionic.BZip2
             createHuffmanDecodingTables(alphaSize, nGroups);
         }
 
-
         /**
          * Called by recvDecodingTables() exclusively.
          */
+
         private void createHuffmanDecodingTables(int alphaSize,
                                                  int nGroups)
         {
@@ -828,8 +808,6 @@ namespace Ionic.BZip2
             }
         }
 
-
-
         private void getAndMoveToFrontDecode()
         {
             var s = this.data;
@@ -852,7 +830,7 @@ namespace Ionic.BZip2
              */
             for (int i = 256; --i >= 0;)
             {
-                yy[i] = (byte) i;
+                yy[i] = (byte)i;
                 s.unzftab[i] = 0;
             }
 
@@ -1054,7 +1032,6 @@ namespace Ionic.BZip2
             this.bsBuff = bsBuffShadow;
         }
 
-
         private int getAndMoveToFrontDecode0(int groupNo)
         {
             var s = this.data;
@@ -1093,7 +1070,6 @@ namespace Ionic.BZip2
             return s.gPerm[zt][zvec - s.gBase[zt][zn]];
         }
 
-
         private void SetupBlock()
         {
             if (this.data == null)
@@ -1114,12 +1090,12 @@ namespace Ionic.BZip2
 
             /* Actually generate cftab. */
             s.cftab[0] = 0;
-            for (i = 1; i <= 256; i++) s.cftab[i] = s.unzftab[i-1];
-            for (i = 1; i <= 256; i++) s.cftab[i] += s.cftab[i-1];
+            for (i = 1; i <= 256; i++) s.cftab[i] = s.unzftab[i - 1];
+            for (i = 1; i <= 256; i++) s.cftab[i] += s.cftab[i - 1];
             /* Check: cftab entries in range. */
             for (i = 0; i <= 256; i++)
             {
-                if (s.cftab[i] < 0 || s.cftab[i] > this.last+1)
+                if (s.cftab[i] < 0 || s.cftab[i] > this.last + 1)
                 {
                     var msg = String.Format("BZ_DATA_ERROR: cftab[{0}]={1} last={2}",
                                             i, s.cftab[i], this.last);
@@ -1129,7 +1105,7 @@ namespace Ionic.BZip2
             /* Check: cftab entries non-descending. */
             for (i = 1; i <= 256; i++)
             {
-                if (s.cftab[i-1] > s.cftab[i])
+                if (s.cftab[i - 1] > s.cftab[i])
                     throw new Exception("BZ_DATA_ERROR");
             }
 
@@ -1158,8 +1134,6 @@ namespace Ionic.BZip2
                 SetupNoRandPartA();
             }
         }
-
-
 
         private void SetupRandPartA()
         {
@@ -1226,7 +1200,7 @@ namespace Ionic.BZip2
             }
             else if (++this.su_count >= 4)
             {
-                this.su_z = (char) (this.data.ll8[this.su_tPos] & 0xff);
+                this.su_z = (char)(this.data.ll8[this.su_tPos] & 0xff);
                 this.su_tPos = this.data.tt[this.su_tPos];
                 if (this.su_rNToGo == 0)
                 {
@@ -1281,7 +1255,7 @@ namespace Ionic.BZip2
             }
             else if (++this.su_count >= 4)
             {
-                this.su_z = (char) (this.data.ll8[this.su_tPos] & 0xff);
+                this.su_z = (char)(this.data.ll8[this.su_tPos] & 0xff);
                 this.su_tPos = this.data.tt[this.su_tPos];
                 this.su_j2 = 0;
                 SetupNoRandPartC();
@@ -1314,6 +1288,7 @@ namespace Ionic.BZip2
         {
             // (with blockSize 900k)
             readonly public bool[] inUse = new bool[256];
+
             readonly public byte[] seqToUnseq = new byte[256]; // 256 byte
             readonly public byte[] selector = new byte[BZip2.MaxSelectors]; // 18002 byte
             readonly public byte[] selectorMtf = new byte[BZip2.MaxSelectors]; // 18002 byte
@@ -1346,14 +1321,14 @@ namespace Ionic.BZip2
             {
                 this.unzftab = new int[256]; // 1024 byte
 
-                this.gLimit = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
-                this.gBase = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
-                this.gPerm = BZip2.InitRectangularArray<int>(BZip2.NGroups,BZip2.MaxAlphaSize);
+                this.gLimit = BZip2.InitRectangularArray<int>(BZip2.NGroups, BZip2.MaxAlphaSize);
+                this.gBase = BZip2.InitRectangularArray<int>(BZip2.NGroups, BZip2.MaxAlphaSize);
+                this.gPerm = BZip2.InitRectangularArray<int>(BZip2.NGroups, BZip2.MaxAlphaSize);
                 this.gMinlen = new int[BZip2.NGroups]; // 24 byte
 
                 this.cftab = new int[257]; // 1028 byte
                 this.getAndMoveToFrontDecode_yy = new byte[256]; // 512 byte
-                this.temp_charArray2d = BZip2.InitRectangularArray<char>(BZip2.NGroups,BZip2.MaxAlphaSize);
+                this.temp_charArray2d = BZip2.InitRectangularArray<char>(BZip2.NGroups, BZip2.MaxAlphaSize);
                 this.recvDecodingTables_pos = new byte[BZip2.NGroups]; // 6 byte
 
                 this.ll8 = new byte[blockSize100k * BZip2.BlockSizeMultiple];
@@ -1366,6 +1341,7 @@ namespace Ionic.BZip2
              * I don't initialize it at construction time to avoid unneccessary
              * memory allocation when compressing small files.
              */
+
             public int[] initTT(int length)
             {
                 int[] ttShadow = this.tt;
@@ -1382,8 +1358,6 @@ namespace Ionic.BZip2
                 return ttShadow;
             }
         }
-
-
     }
 
     // /**
@@ -1408,40 +1382,36 @@ namespace Ionic.BZip2
     //     return true;
     // }
 
-
     internal static class BZip2
     {
-            internal static T[][] InitRectangularArray<T>(int d1, int d2)
+        internal static T[][] InitRectangularArray<T>(int d1, int d2)
+        {
+            var x = new T[d1][];
+            for (int i = 0; i < d1; i++)
             {
-                var x = new T[d1][];
-                for (int i=0; i < d1; i++)
-                {
-                    x[i] = new T[d2];
-                }
-                return x;
+                x[i] = new T[d2];
             }
+            return x;
+        }
 
-        public static readonly int BlockSizeMultiple       = 100000;
-        public static readonly int MinBlockSize       = 1;
-        public static readonly int MaxBlockSize       = 9;
-        public static readonly int MaxAlphaSize        = 258;
-        public static readonly int MaxCodeLength       = 23;
-        public static readonly char RUNA                = (char) 0;
-        public static readonly char RUNB                = (char) 1;
-        public static readonly int NGroups             = 6;
-        public static readonly int G_SIZE              = 50;
-        public static readonly int N_ITERS             = 4;
-        public static readonly int MaxSelectors        = (2 + (900000 / G_SIZE));
+        public static readonly int BlockSizeMultiple = 100000;
+        public static readonly int MinBlockSize = 1;
+        public static readonly int MaxBlockSize = 9;
+        public static readonly int MaxAlphaSize = 258;
+        public static readonly int MaxCodeLength = 23;
+        public static readonly char RUNA = (char)0;
+        public static readonly char RUNB = (char)1;
+        public static readonly int NGroups = 6;
+        public static readonly int G_SIZE = 50;
+        public static readonly int N_ITERS = 4;
+        public static readonly int MaxSelectors = (2 + (900000 / G_SIZE));
         public static readonly int NUM_OVERSHOOT_BYTES = 20;
-    /*
-     * <p> If you are ever unlucky/improbable enough to get a stack
-     * overflow whilst sorting, increase the following constant and
-     * try again. In practice I have never seen the stack go above 27
-     * elems, so the following limit seems very generous.  </p>
-     */
+        /*
+         * <p> If you are ever unlucky/improbable enough to get a stack
+         * overflow whilst sorting, increase the following constant and
+         * try again. In practice I have never seen the stack go above 27
+         * elems, so the following limit seems very generous.  </p>
+         */
         internal static readonly int QSORT_STACK_SIZE = 1000;
-
-
     }
-
 }

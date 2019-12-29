@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NAudio.Utils;
+﻿using NAudio.Utils;
 
 namespace NAudio.Wave.SampleProviders
 {
-    class Stereo24SampleChunkConverter : ISampleChunkConverter
+    internal class Stereo24SampleChunkConverter : ISampleChunkConverter
     {
         private int offset;
         private byte[] sourceBuffer;
@@ -17,7 +14,6 @@ namespace NAudio.Wave.SampleProviders
                 waveFormat.BitsPerSample == 24 &&
                 waveFormat.Channels == 2;
         }
-
 
         public void LoadNextChunk(IWaveProvider source, int samplePairsRequired)
         {
@@ -44,6 +40,5 @@ namespace NAudio.Wave.SampleProviders
                 return false;
             }
         }
-
     }
 }

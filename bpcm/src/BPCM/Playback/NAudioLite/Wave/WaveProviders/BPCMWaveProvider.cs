@@ -1,28 +1,28 @@
-﻿using System;
-using NAudio.Wave;
+﻿using BPCM.ADPCM;
 using BPCM.Helpers;
-using System.Diagnostics;
-using BPCM.ADPCM;
+using NAudio.Wave;
+using System;
 
 namespace BPCM
 {
-    class BPCMWaveProvider : IWaveProvider
+    internal class BPCMWaveProvider : IWaveProvider
     {
         private readonly WaveFormat waveFormat;
         WaveFormat IWaveProvider.WaveFormat { get { return waveFormat; } }
 
         public delegate void delegateReadDone(Frame CurrentFrame);
+
         private delegateReadDone m_evtReadDone;
         public delegateReadDone readDone { get { return m_evtReadDone; } set { m_evtReadDone = value; } }
         private float vol;
         private double srfactor;
         public float volume { get { return vol; } set { vol = value; } }
 
-        BitstreamReader streamBPCM;
-        RingBuffer rb;
-        Frame frame0;
-        Frame currentFrame;
-        double tsOffset;
+        private BitstreamReader streamBPCM;
+        private RingBuffer rb;
+        private Frame frame0;
+        private Frame currentFrame;
+        private double tsOffset;
 
         public BPCMWaveProvider(BitstreamReader stream, double srf = 1)
         {
@@ -46,7 +46,7 @@ namespace BPCM
         {
             //Fill ring buffer when needed
             streamBPCM.DecodingVolume = vol;
-            
+
             while (rb.Count < buffer.Length || rb.Count == 0)
             {
                 object tmp = streamBPCM.GetFrame();
@@ -84,7 +84,7 @@ namespace BPCM
                 ADPCM4BIT.VolumeInfo vi = currentFrame.VolumeInfo;
                 int cf = currentFrame.FrameNumber;
                 if (cf < 0) cf = 0;
-                if (cf >= streamBPCM.Analysis.FrameSet.Count) cf = streamBPCM.Analysis.FrameSet.Count-1;
+                if (cf >= streamBPCM.Analysis.FrameSet.Count) cf = streamBPCM.Analysis.FrameSet.Count - 1;
                 currentFrame = streamBPCM.Analysis.FrameSet[cf];
                 currentFrame.TimeStamp += tsOffset;
                 tsOffset += (buffer.Length / (double)(currentFrame.Channels * 2 * currentFrame.SamplingRate));

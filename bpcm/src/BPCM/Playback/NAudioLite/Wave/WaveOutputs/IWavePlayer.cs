@@ -40,7 +40,7 @@ namespace NAudio.Wave
         float Volume { get; set; }
 
         /// <summary>
-        /// Indicates that playback has gone into a stopped state due to 
+        /// Indicates that playback has gone into a stopped state due to
         /// reaching the end of the input stream or an error has been encountered during playback
         /// </summary>
         event EventHandler<StoppedEventArgs> PlaybackStopped;

@@ -1,17 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace BPCM
-{    static class HexTool
+﻿namespace BPCM
+{
+    internal static class HexTool
     {
         public static string HexStr(byte[] p)
         {
             char[] c = new char[p.Length * 2 + 2];
             byte b;
-            
+
             for (int y = 0, x = 0; y < p.Length; ++y, ++x)
             {
                 b = ((byte)(p[y] >> 4));

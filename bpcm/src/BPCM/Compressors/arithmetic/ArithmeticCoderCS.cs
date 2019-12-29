@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace BPCM
 {
@@ -11,6 +7,7 @@ namespace BPCM
         // constants to split the number space of 32 bit integers
         // most significant bit kept free to prevent overflows
         public const uint g_FirstQuarter = 0x20000000;
+
         public const uint g_Half = 0x40000000;
         public const uint g_ThirdQuarter = 0x60000000;
 
@@ -65,7 +62,9 @@ namespace BPCM
                     // Reseting recalls set by follow actions
                     for (; mScale > 0; mScale--)
                         SetBit(1);
-                }else if(mLow >= g_Half){
+                }
+                else if (mLow >= g_Half)
+                {
                     SetBit(1);
                     mLow = (mLow - g_Half) * 2;
                     mHigh = (mHigh - g_Half) * 2 + 1;
@@ -73,12 +72,11 @@ namespace BPCM
                     // Reseting recalls set by follow actions
                     for (; mScale > 0; mScale--)
                         SetBit(0);
-
                 }
             }
 
             // Set an recall to be applied later
-            while ( (g_FirstQuarter <= mLow) && (mHigh < g_ThirdQuarter) )
+            while ((g_FirstQuarter <= mLow) && (mHigh < g_ThirdQuarter))
             {
                 // keep necessary mappings in mind
                 mScale++;
@@ -165,7 +163,7 @@ namespace BPCM
         protected void SetBit(uint bit)
         {
             // add bit to the buffer
-            mBitBuffer = (byte)( ((uint)mBitBuffer << 1) | bit );
+            mBitBuffer = (byte)(((uint)mBitBuffer << 1) | bit);
             mBitCount++;
 
             if (mBitCount == 8) // buffer full
@@ -174,7 +172,6 @@ namespace BPCM
                 mStream.WriteByte(mBitBuffer);
                 mBitCount = 0;
             }
-            
         }
 
         protected void SetBitFlush()
@@ -195,13 +192,13 @@ namespace BPCM
                     mBitBuffer = 0;
                 else
                     mBitBuffer = (byte)readInt; // append zeros
-                
+
                 mBitCount = 8;
             }
 
             // extract bit from buffer
             uint bit = (uint)mBitBuffer >> 7;
-            mBitBuffer = (byte)( (uint)mBitBuffer << 1 );
+            mBitBuffer = (byte)((uint)mBitBuffer << 1);
             mBitCount--;
 
             return bit;

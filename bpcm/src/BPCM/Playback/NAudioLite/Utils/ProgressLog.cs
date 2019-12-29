@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 
 namespace NAudio.Utils
@@ -21,8 +16,6 @@ namespace NAudio.Utils
             InitializeComponent();
         }
 
-
-
         /// <summary>
         /// The contents of the log as text
         /// </summary>
@@ -34,9 +27,7 @@ namespace NAudio.Utils
             }
         }
 
-
-
-        delegate void LogMessageDelegate(Color color, string message);
+        private delegate void LogMessageDelegate(Color color, string message);
 
         /// <summary>
         /// Log a message
@@ -56,7 +47,7 @@ namespace NAudio.Utils
             }
         }
 
-        delegate void ClearLogDelegate();
+        private delegate void ClearLogDelegate();
 
         /// <summary>
         /// Clear the log
@@ -71,6 +62,6 @@ namespace NAudio.Utils
             {
                 richTextBoxLog.Clear();
             }
-        }        
+        }
     }
 }

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Runtime.InteropServices;
-using Microsoft.Win32;
 
 namespace NAudio.Wave
 {
@@ -15,28 +15,34 @@ namespace NAudio.Wave
         /// wMid
         /// </summary>
         private short manufacturerId;
+
         /// <summary>
         /// wPid
         /// </summary>
         private short productId;
+
         /// <summary>
         /// vDriverVersion
         /// </summary>
         private int driverVersion;
+
         /// <summary>
         /// Product Name (szPname)
         /// </summary>
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxProductNameLength)]
         private string productName;
+
         /// <summary>
-        /// Supported formats (bit flags) dwFormats 
+        /// Supported formats (bit flags) dwFormats
         /// </summary>
         private SupportedWaveFormat supportedFormats;
+
         /// <summary>
         /// Supported channels (1 for mono 2 for stereo) (wChannels)
         /// Seems to be set to -1 on a lot of devices
         /// </summary>
         private short channels;
+
         /// <summary>
         /// wReserved1
         /// </summary>
@@ -44,6 +50,7 @@ namespace NAudio.Wave
 
         // extra WAVEINCAPS2 members
         private Guid manufacturerGuid;
+
         private Guid productGuid;
         private Guid nameGuid;
 
@@ -75,10 +82,12 @@ namespace NAudio.Wave
         /// The device name Guid (if provided)
         /// </summary>
         public Guid NameGuid { get { return nameGuid; } }
+
         /// <summary>
         /// The product name Guid (if provided)
         /// </summary>
         public Guid ProductGuid { get { return productGuid; } }
+
         /// <summary>
         /// The manufacturer guid (if provided)
         /// </summary>
@@ -93,7 +102,6 @@ namespace NAudio.Wave
         {
             return (supportedFormats & waveFormat) == waveFormat;
         }
-
     }
 
     internal static class WaveCapabilitiesHelpers

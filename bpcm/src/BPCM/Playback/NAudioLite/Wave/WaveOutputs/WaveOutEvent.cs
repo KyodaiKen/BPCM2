@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace NAudio.Wave
 {
@@ -87,7 +87,7 @@ namespace NAudio.Wave
             this.callbackEvent = new AutoResetEvent(false);
 
             this.waveStream = waveProvider;
-            int bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize((DesiredLatency + NumberOfBuffers - 1) / NumberOfBuffers);            
+            int bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize((DesiredLatency + NumberOfBuffers - 1) / NumberOfBuffers);
 
             MmResult result;
             lock (waveOutLock)
@@ -151,7 +151,7 @@ namespace NAudio.Wave
             {
                 if (!callbackEvent.WaitOne(DesiredLatency))
                     Debug.WriteLine("WARNING: WaveOutEvent callback event timeout");
-                
+
                 // requeue any buffers returned to us
                 if (playbackState == PlaybackState.Playing)
                 {
@@ -223,7 +223,7 @@ namespace NAudio.Wave
                 // in the call to waveOutReset with function callbacks
                 // some drivers will block here until OnDone is called
                 // for every buffer
-                playbackState = PlaybackState.Stopped; // set this here to avoid a problem with some drivers whereby 
+                playbackState = PlaybackState.Stopped; // set this here to avoid a problem with some drivers whereby
                 MmResult result;
                 lock (waveOutLock)
                 {
@@ -344,7 +344,7 @@ namespace NAudio.Wave
                 if (hWaveOut != IntPtr.Zero)
                 {
                     WaveInterop.waveOutClose(hWaveOut);
-                    hWaveOut= IntPtr.Zero;
+                    hWaveOut = IntPtr.Zero;
                 }
             }
         }
@@ -370,7 +370,7 @@ namespace NAudio.Wave
             Dispose(false);
         }
 
-        #endregion
+        #endregion Dispose Pattern
 
         private void RaisePlaybackStoppedEvent(Exception e)
         {

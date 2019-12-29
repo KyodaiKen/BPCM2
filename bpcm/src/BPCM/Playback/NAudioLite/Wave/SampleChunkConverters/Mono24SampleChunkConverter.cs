@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NAudio.Utils;
+﻿using NAudio.Utils;
 
 namespace NAudio.Wave.SampleProviders
 {
-    class Mono24SampleChunkConverter : ISampleChunkConverter
+    internal class Mono24SampleChunkConverter : ISampleChunkConverter
     {
         private int offset;
         private byte[] sourceBuffer;
@@ -21,7 +18,7 @@ namespace NAudio.Wave.SampleProviders
         public void LoadNextChunk(IWaveProvider source, int samplePairsRequired)
         {
             int sourceBytesRequired = samplePairsRequired * 3;
-            sourceBuffer = BufferHelpers.Ensure(sourceBuffer,sourceBytesRequired);
+            sourceBuffer = BufferHelpers.Ensure(sourceBuffer, sourceBytesRequired);
             sourceBytes = source.Read(sourceBuffer, 0, sourceBytesRequired);
             offset = 0;
         }
