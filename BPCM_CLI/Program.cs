@@ -454,8 +454,8 @@ namespace BPCM_CLI
 
                 //Refresh the status line
                 Console.CursorLeft = 0;
-                Console.Write(strFbI + strALR + "{0,21}" + strFbI + "{1," + fnumLen + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "x{5,4}" + strFbI,
-                                strPos, currFrame + 1, Math.Round(((CurrentFrame.DataLength + CurrentFrame.HederLength) / CurrentFrame.Duration) * 8, 0), CurrentFrame.CompressionTypeDescr, Math.Round(wavOut.Volume * 100, 1), speed);
+                Console.Write(strFbI + strALR + "{0,21}" + strFbI + "{1," + fnumLen + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "x{5,4:0.##}" + strFbI,
+                                strPos, currFrame + 1, Math.Round(((CurrentFrame.DataLength + CurrentFrame.HederLength) / CurrentFrame.Duration) * 8, 0), CurrentFrame.CompressionTypeDescr, Math.Round(wavOut.Volume * 100, 1), Math.Round(speed, 2));
 
                 //Calculate bar length from dB value.
                 const int max = 57, lowpoint = 62; //lowpoint is the positive value of the minus dB the scale will start

@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BPCM\BPCM.csproj" />
+    <ProjectReference Include="..\BPCM_Core\BPCM_Core.csproj" />
   </ItemGroup>
 
 </Project>
