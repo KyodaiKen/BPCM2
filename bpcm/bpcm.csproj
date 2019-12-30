@@ -5,6 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Helpers\CSV.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Helpers\CSV.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Compressors\Compressors.csproj" />
     <ProjectReference Include="..\NAudioLitle\NAudioLitle.csproj" />
     <ProjectReference Include="..\PCM\Pcm.csproj" />
