@@ -6,7 +6,7 @@
     <AssemblyName>BPCM_CLI</AssemblyName>
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>file_icon.ico</ApplicationIcon>
     <StartupObject></StartupObject>
     <Description>Entropy encoded ADPCM audio codec</Description>
     <Company>Kyodai Ken</Company>
