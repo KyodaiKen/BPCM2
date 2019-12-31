@@ -453,13 +453,13 @@ namespace BPCM_CLI
                 Volume = volume,
                 PlaybackRate = rate,
                 WaveOutDevice = OutputDeviceIndex,
-                EnableDithering = EnableDither
+                EnableDithering = EnableDither,
+                AnalysisUpdateEvent = AnalysisUpdate,
+                FileOpenedEvent = FileOpened
             });
 
             //Assign events
             _player.PlaybackUpdateEvent = PlaybackUpdate;
-            _player.AnalysisUpdateEvent = AnalysisUpdate;
-            _player.FileOpenedEvent = FileOpened;
 
             void FileOpened(Decoder.Info inf)
             {

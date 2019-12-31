@@ -448,7 +448,6 @@ namespace BPCM.Easy
         private bool _playing;
         private bool _stopping;
         private bool _seeking;
-        private bool _dontExit;
 
         private FileStream _BPCMFile;
         private BitstreamReader _BPCMStream;
@@ -471,6 +470,8 @@ namespace BPCM.Easy
             public float Volume;
             public double PlaybackRate;
             public bool EnableDithering;
+            public dgAnalysisUpdate AnalysisUpdateEvent;
+            public dgFileOpened FileOpenedEvent;
         }
 
         public struct PlaybackUpdateInfo
@@ -491,8 +492,6 @@ namespace BPCM.Easy
         public dgPlaybackStopped PlaybackStoppedEvent { get; set; }
         public dgPlaybackUpdate PlaybackUpdateEvent { get; set; }
         public dgWaveOutInitialized WaveOutInitializedEvent { get; set; }
-        public dgFileOpened FileOpenedEvent { get; set; }
-        public dgAnalysisUpdate AnalysisUpdateEvent { get; set; }
 
         public double Duration
         {
@@ -623,11 +622,8 @@ namespace BPCM.Easy
         private void __INTERNAL_Seek(double pos)
         {
             _seeking = true;
-            _dontExit = true;
             _BPCMStream.Seek(pos);
-            //_BPCMWaveProvider.DropRingBuffer(); <- This causes WEIRD behavior sometimes...
             _seeking = false;
-            _dontExit = false;
         }
 
         private void __INTERNAL_ChangeRate()
@@ -655,7 +651,7 @@ namespace BPCM.Easy
                 _playing = false;
                 __INTERNAL_UpdatePosition(_BPCMStream.Analysis.FrameSet[0]);
             }
-            else if (_dontExit && !_stopping)
+            else if (!_stopping)
             {
                 rsn = PlaybackStoppedReason.BufferEmpty;
             }
@@ -681,11 +677,11 @@ namespace BPCM.Easy
 
             //Open the BPCM file
             _BPCMFile = new FileStream(bpcmFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.RandomAccess);
-            if (!AnalysisUpdateEvent.Equals(null))
+            if (_config.AnalysisUpdateEvent != null)
             {
                 void AnalysisUpdtEvt(float progress)
                 {
-                    AnalysisUpdateEvent.Invoke(progress);
+                    _config.AnalysisUpdateEvent.Invoke(progress);
                 }
                 _BPCMStream = new BitstreamReader(_BPCMFile, aupevt: AnalysisUpdtEvt);
             }
@@ -694,13 +690,13 @@ namespace BPCM.Easy
             
             _BPCMStream.EnableDither = _config.EnableDithering;
 
-            if(!FileOpenedEvent.Equals(null))
+            if(_config.FileOpenedEvent != null)
             { 
                 double duration = (double)_BPCMStream.Analysis.DurationSampleCount / _BPCMStream.Analysis.FrameSet[0].SamplingRate;
                 TimeSpan dur = TimeSpan.FromSeconds(duration);
                 string strDuration = string.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", dur.Days, dur.Hours, dur.Minutes, dur.Seconds, (duration - Math.Floor(duration)) * 1000);
 
-                FileOpenedEvent.Invoke(new Decoder.Info()
+                _config.FileOpenedEvent.Invoke(new Decoder.Info()
                 {
                       NumberOfChannels = _BPCMStream.Analysis.FrameSet[0].Channels
                     , SamplingRate = _BPCMStream.Analysis.FrameSet[0].SamplingRate
