@@ -642,7 +642,6 @@ namespace BPCM.Easy
 
         private void __INTERNAL_PlaybackStopped(object sender, StoppedEventArgs e)
         {
-            _stopping = true;
             PlaybackStoppedReason rsn;
             if (!_seeking && !_stopping)
             {
@@ -659,7 +658,7 @@ namespace BPCM.Easy
             {
                 rsn = PlaybackStoppedReason.StopCalled;
             }
-
+            _stopping = true;
             if (e.Exception != null) rsn = PlaybackStoppedReason.SomeError;
             PlaybackStoppedEvent?.Invoke(rsn);
         }
