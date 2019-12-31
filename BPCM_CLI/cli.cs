@@ -18,9 +18,9 @@ namespace BPCM_CLI
         {
             Console.WriteLine("");
             Console.WriteLine(String.Concat(Enumerable.Repeat("-", 24)) + " Usage " + String.Concat(Enumerable.Repeat("-", 24)));
-            Console.WriteLine("Encode:   bpcm input.wav output.bpcm");
-            Console.WriteLine("Decode:   bpcm input.bpcm output.wav");
-            Console.WriteLine("Playback: bpcm input.bpcm");
+            Console.WriteLine("Encode:   bpcm input.wav output.bpcm2");
+            Console.WriteLine("Decode:   bpcm input.bpcm2 output.wav");
+            Console.WriteLine("Playback: bpcm input.bpcm2");
             Console.WriteLine("You can place your option parameters anywhere you like!");
             Console.WriteLine("");
             Console.WriteLine("== Encoding options ==");
@@ -77,8 +77,8 @@ namespace BPCM_CLI
                 }
                 else
                 {
-                    if (Console.CursorLeft + (int)left > Console.BufferWidth)
-                        Console.CursorLeft = Console.BufferWidth;
+                    if (Console.CursorLeft + (int)left > Console.BufferWidth-1)
+                        Console.CursorLeft = Console.BufferWidth-1;
                     else
                         Console.CursorLeft += (int)left;
                 }
@@ -88,8 +88,8 @@ namespace BPCM_CLI
                 }
                 else
                 {
-                    if (Console.CursorTop + top > Console.BufferHeight)
-                        Console.CursorTop = Console.BufferHeight;
+                    if (Console.CursorTop + top > Console.BufferHeight-1)
+                        Console.CursorTop = Console.BufferHeight-1;
                     else
                         Console.CursorTop += (int)top;
                 }
@@ -106,7 +106,7 @@ namespace BPCM_CLI
                     {
                         if (left > Console.BufferWidth)
                         {
-                            Console.CursorLeft = Console.BufferWidth;
+                            Console.CursorLeft = Console.BufferWidth-1;
                         }
                         else
                         {
@@ -125,7 +125,7 @@ namespace BPCM_CLI
                     {
                         if (top > Console.BufferHeight)
                         {
-                            Console.CursorTop = Console.BufferHeight;
+                            Console.CursorTop = Console.BufferHeight-1;
                         }
                         else
                         {
@@ -447,16 +447,19 @@ namespace BPCM_CLI
             //VU meter chars
             string[,] arrVU = { { " ", "\x2580" }, { " ", "\x2584" } };
 
+            //Init player
             var _player = new Player(BPCMFile, new Player.ConfigurationBean()
             {
                 Volume = volume,
                 PlaybackRate = rate,
                 WaveOutDevice = OutputDeviceIndex,
-                EnableDithering = EnableDither,
-                PlaybackUpdateEvent = PlaybackUpdate,
-                AnalysisUpdateEvent = AnalysisUpdate,
-                FileOpenedEvent = FileOpened
+                EnableDithering = EnableDither
             });
+
+            //Assign events
+            _player.PlaybackUpdateEvent = PlaybackUpdate;
+            _player.AnalysisUpdateEvent = AnalysisUpdate;
+            _player.FileOpenedEvent = FileOpened;
 
             void FileOpened(Decoder.Info inf)
             {
@@ -711,7 +714,6 @@ namespace BPCM_CLI
                 }
             }
 
-            clean_exit:
             _player?.Dispose();
         }
     }

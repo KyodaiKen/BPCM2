@@ -446,6 +446,7 @@ namespace BPCM.Easy
         private double _pos;
 
         private bool _playing;
+        private bool _stopping;
         private bool _seeking;
         private bool _dontExit;
 
@@ -467,11 +468,6 @@ namespace BPCM.Easy
             public int WaveOutDevice;
             public int WaveOutBufferSize;
             public int WaveOutBufferCount;
-            public dgPlaybackStopped PlaybackStoppedEvent;
-            public dgPlaybackUpdate PlaybackUpdateEvent;
-            public dgWaveOutInitialized WaveOutInitializedEvent;
-            public dgFileOpened FileOpenedEvent;
-            public dgAnalysisUpdate AnalysisUpdateEvent;
             public float Volume;
             public double PlaybackRate;
             public bool EnableDithering;
@@ -491,6 +487,12 @@ namespace BPCM.Easy
         public delegate void dgPlaybackStopped(PlaybackStoppedReason Reason);
         public delegate void dgPlaybackUpdate(PlaybackUpdateInfo Info);
         public delegate void dgAnalysisUpdate(float progress);
+
+        public dgPlaybackStopped PlaybackStoppedEvent { get; set; }
+        public dgPlaybackUpdate PlaybackUpdateEvent { get; set; }
+        public dgWaveOutInitialized WaveOutInitializedEvent { get; set; }
+        public dgFileOpened FileOpenedEvent { get; set; }
+        public dgAnalysisUpdate AnalysisUpdateEvent { get; set; }
 
         public double Duration
         {
@@ -563,11 +565,13 @@ namespace BPCM.Easy
                 {
                     if (_playing == true && value == false)
                     {
+                        _stopping = true;
                         _WaveOut.Stop();
                         _playing = false;
                     }
                     else if (_playing == false && value == true)
                     {
+                        _stopping = false;
                         _WaveOut.Play();
                         _playing = true;
                     }
@@ -605,9 +609,10 @@ namespace BPCM.Easy
         {
             //Set position property memory value
             _pos = frame.TimeStamp;
+            _stopping = false;
 
             //Invoke position change event
-            _config.PlaybackUpdateEvent?.Invoke(new PlaybackUpdateInfo()
+            PlaybackUpdateEvent?.Invoke(new PlaybackUpdateInfo()
             {
                 CurrentFrame = frame,
                 PlaybackRate = PlaybackRate,
@@ -620,34 +625,37 @@ namespace BPCM.Easy
             _seeking = true;
             _dontExit = true;
             _BPCMStream.Seek(pos);
-            _BPCMWaveProvider.DropRingBuffer();
+            //_BPCMWaveProvider.DropRingBuffer(); <- This causes WEIRD behavior sometimes...
             _seeking = false;
             _dontExit = false;
         }
 
         private void __INTERNAL_ChangeRate()
         {
+            _stopping = true;
             _WaveOut.Stop();
             _WaveOut.Dispose();
             _WaveOut = null;
             _BPCMWaveProvider = null;
             GC.Collect();
-            _BPCMStream.Seek(_BPCMStream.FramesDecoded - 2);
             __INTERNAL_WaveOutInit();
             _WaveOut.Play();
+            _stopping = false;
+            _playing = true;
         }
 
         private void __INTERNAL_PlaybackStopped(object sender, StoppedEventArgs e)
         {
+            _stopping = true;
             PlaybackStoppedReason rsn;
-            if (!_seeking)
+            if (!_seeking && !_stopping)
             {
                 rsn = PlaybackStoppedReason.NoMoreData;
                 Position = 0;
                 _playing = false;
                 __INTERNAL_UpdatePosition(_BPCMStream.Analysis.FrameSet[0]);
             }
-            else if (_dontExit)
+            else if (_dontExit && !_stopping)
             {
                 rsn = PlaybackStoppedReason.BufferEmpty;
             }
@@ -657,8 +665,7 @@ namespace BPCM.Easy
             }
 
             if (e.Exception != null) rsn = PlaybackStoppedReason.SomeError;
-            //Console.WriteLine(e.Exception.ToString());
-            _config.PlaybackStoppedEvent?.Invoke(rsn);
+            PlaybackStoppedEvent?.Invoke(rsn);
         }
 
         public Player(string bpcmFile, ConfigurationBean config)
@@ -674,11 +681,11 @@ namespace BPCM.Easy
 
             //Open the BPCM file
             _BPCMFile = new FileStream(bpcmFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.RandomAccess);
-            if (!_config.AnalysisUpdateEvent.Equals(null))
+            if (!AnalysisUpdateEvent.Equals(null))
             {
                 void AnalysisUpdtEvt(float progress)
                 {
-                    _config.AnalysisUpdateEvent.Invoke(progress);
+                    AnalysisUpdateEvent.Invoke(progress);
                 }
                 _BPCMStream = new BitstreamReader(_BPCMFile, aupevt: AnalysisUpdtEvt);
             }
@@ -687,13 +694,13 @@ namespace BPCM.Easy
             
             _BPCMStream.EnableDither = _config.EnableDithering;
 
-            if(!_config.FileOpenedEvent.Equals(null))
+            if(!FileOpenedEvent.Equals(null))
             { 
                 double duration = (double)_BPCMStream.Analysis.DurationSampleCount / _BPCMStream.Analysis.FrameSet[0].SamplingRate;
                 TimeSpan dur = TimeSpan.FromSeconds(duration);
                 string strDuration = string.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", dur.Days, dur.Hours, dur.Minutes, dur.Seconds, (duration - Math.Floor(duration)) * 1000);
 
-                _config.FileOpenedEvent.Invoke(new Decoder.Info()
+                FileOpenedEvent.Invoke(new Decoder.Info()
                 {
                       NumberOfChannels = _BPCMStream.Analysis.FrameSet[0].Channels
                     , SamplingRate = _BPCMStream.Analysis.FrameSet[0].SamplingRate
@@ -720,7 +727,7 @@ namespace BPCM.Easy
             //Determine the used device and fire the init event once.
             WaveOutCapabilities devcaps = WaveOut.GetCapabilities(0);
             for (int x = 0; x < WaveOut.DeviceCount; x++) if (x == _WaveOut.DeviceNumber || x != 0) devcaps = WaveOut.GetCapabilities(x);
-            _config.WaveOutInitializedEvent?.Invoke(devcaps);
+            WaveOutInitializedEvent?.Invoke(devcaps);
         }
 
         public void Play()
