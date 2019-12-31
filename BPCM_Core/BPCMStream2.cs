@@ -1,4 +1,5 @@
 ﻿using BPCM.CompressionHelper;
+using PCM;
 using PCM.ADPCM;
 using System;
 using System.Collections.Generic;
@@ -9,26 +10,6 @@ namespace BPCM
 {
     public class InfoByte
     {
-        #region Enums
-
-        public enum DataInfo : byte
-        {
-            Silent = 0,
-            LengthAddressingByte = 1,
-            LengthAddressingShort = 2,
-            LengthAddressing24Bit = 3
-        }
-
-        public enum CompressionType : byte
-        {
-            None = 0,
-            BZIP2 = 1,
-            LZMA = 2,
-            Arithmetic = 3
-        }
-
-        #endregion Enums
-
         #region Properties
 
         public int SamplingRate { get; set; }
@@ -121,45 +102,8 @@ namespace BPCM
         #endregion I/O
     }
 
-    public struct Frame
-    {
-        public int FrameNumber;
-        public InfoByte.DataInfo DataInfo;
-        public int HederLength;
-        public InfoByte.CompressionType CompressionType;
-        public string CompressionTypeDescr;
-        public int Channels;
-        public int SamplingRate;
-        public double TimeStamp;
-        public long DataOffset;
-        public int SampleCount;
-        public double Duration;
-        public bool UseLastSampleCount;
-        public long DataLength;
-        public byte[] Data;
-        public ADPCM4BIT.VolumeInfo VolumeInfo;
-    }
-
     public class BitstreamReader
     {
-        //Structures
-        public struct Stats
-        {
-            public int BitrateMinimum;
-            public int BitrateAverage;
-            public int BitrateMaximum;
-            public int BlockSizeMinimum;
-            public int BlockSizeAverage;
-            public int BlockSizeMaximum;
-            public int BlockSizeNominal;
-            public int LongestSilentFrame;
-            public double Duration;
-            public long DurationSampleCount;
-            public List<Frame> FrameSet;
-            public List<string> CompressionUsed;
-            public Dictionary<int, long> FrameSampleCountHistogram;
-        }
-
         //Constants
         private const byte Sync = 0xB1;
 
@@ -248,15 +192,15 @@ namespace BPCM
             if (found) return ib; else return false;
         }
 
-        private byte[] Decode(byte[] BPCM_In, InfoByte.CompressionType CompressionType, out ADPCM4BIT.VolumeInfo vi, bool is_mono = false, float Volume = 1)
+        private byte[] Decode(byte[] BPCM_In, CompressionType CompressionType, out VolumeInfo[] vi, bool is_mono = false, float Volume = 1)
         {
             //Decode ADPCM to raw pcm_s16le
             byte[] data = Compression.Decompress(BPCM_In, CompressionType);
-            vi = new ADPCM4BIT.VolumeInfo();
-            vi.dbPeakL = double.NegativeInfinity;
-            vi.dbPeakR = double.NegativeInfinity;
-            vi.dbAvgL = double.NegativeInfinity;
-            vi.dbAvgR = double.NegativeInfinity;
+            vi = new VolumeInfo[2];
+            vi[0].dbPeak = double.NegativeInfinity;
+            vi[1].dbPeak = double.NegativeInfinity;
+            vi[0].dbAvg = double.NegativeInfinity;
+            vi[1].dbAvg = double.NegativeInfinity;
 
             if (data.LongLength == 0)
             {
@@ -267,7 +211,13 @@ namespace BPCM
             if (is_mono)
             {
                 ADPCM4BIT_MONO adpcmCoder = new ADPCM4BIT_MONO();
-                return adpcmCoder.decode(data, out vi, true, Volume);
+                //VolumeInfo must be converted to array. Not ideal...
+                VolumeInfo vim;
+                vi = new VolumeInfo[2];
+                var decoded = adpcmCoder.decode(data, out vim, true, Volume);
+                vi[0] = vim;
+                vi[1] = vim;
+                return decoded;
             }
             else
             {
@@ -292,10 +242,10 @@ namespace BPCM
             byte[] tmp;
 
             //If this frame is silent but no compression is set, then this is an invalid condition!
-            if (ib.DataLengthInfo == InfoByte.DataInfo.Silent && ib.Compression == 0) return false;
+            if (ib.DataLengthInfo == DataInfo.Silent && ib.Compression == 0) return false;
 
             //Frame has no sample count but we didn't got one yet, so we have to force decoding to get it!
-            bool DecodeAnyways = (ib.UseLastSampleCount && i_LastSampleCount == 0 && ib.DataLengthInfo != InfoByte.DataInfo.Silent);
+            bool DecodeAnyways = (ib.UseLastSampleCount && i_LastSampleCount == 0 && ib.DataLengthInfo != DataInfo.Silent);
 
             //Init header size
             OurFrame.HederLength = 2;
@@ -306,7 +256,7 @@ namespace BPCM
             OurFrame.DataInfo = ib.DataLengthInfo;
 
             //Get sample count from frame header if given
-            if (ib.DataLengthInfo != InfoByte.DataInfo.Silent)
+            if (ib.DataLengthInfo != DataInfo.Silent)
             {
                 if (!ib.UseLastSampleCount)
                 {
@@ -328,17 +278,17 @@ namespace BPCM
             }
 
             //If this frame is silent but a compression is set, get the number of samples instead to determine the length
-            if (ib.DataLengthInfo == InfoByte.DataInfo.Silent && ib.Compression > 0)
+            if (ib.DataLengthInfo == DataInfo.Silent && ib.Compression > 0)
             {
                 OurFrame.DataLength = 0;
                 switch (ib.Compression)
                 {
-                    case InfoByte.CompressionType.BZIP2:
+                    case CompressionType.BZIP2:
                         OurFrame.SampleCount = i_Stream.ReadByte();
                         OurFrame.HederLength += 1;
                         break;
 
-                    case InfoByte.CompressionType.LZMA:
+                    case CompressionType.LZMA:
                         tmp = new byte[2];
                         i_Stream.Read(tmp, 0, 2);
                         OurFrame.SampleCount = BitConverter.ToUInt16(tmp, 0);
@@ -346,7 +296,7 @@ namespace BPCM
                         OurFrame.HederLength += 2;
                         break;
 
-                    case InfoByte.CompressionType.Arithmetic:
+                    case CompressionType.Arithmetic:
                         tmp = new byte[4];
                         i_Stream.Read(tmp, 0, 3);
                         OurFrame.SampleCount = (int)BitConverter.ToUInt32(tmp, 0);
@@ -359,20 +309,20 @@ namespace BPCM
                 i_LastSampleCount = OurFrame.SampleCount;
 
                 //OMG we're lying!!!
-                OurFrame.CompressionType = InfoByte.CompressionType.None;
+                OurFrame.CompressionType = CompressionType.None;
             }
             else
             {
                 //Process the next bytes as data length normally
                 switch (ib.DataLengthInfo)
                 {
-                    case InfoByte.DataInfo.LengthAddressingByte:
+                    case DataInfo.LengthAddressingByte:
                         OurFrame.DataLength = (byte)i_Stream.ReadByte();
                         OurFrame.HederLength += 1;
 
                         break;
 
-                    case InfoByte.DataInfo.LengthAddressingShort:
+                    case DataInfo.LengthAddressingShort:
                         tmp = new byte[2];
                         i_Stream.Read(tmp, 0, 2);
                         OurFrame.DataLength = BitConverter.ToUInt16(tmp, 0);
@@ -380,7 +330,7 @@ namespace BPCM
                         OurFrame.HederLength += 2;
                         break;
 
-                    case InfoByte.DataInfo.LengthAddressing24Bit:
+                    case DataInfo.LengthAddressing24Bit:
                         tmp = new byte[4];
                         i_Stream.Read(tmp, 0, 3);
                         OurFrame.DataLength = BitConverter.ToUInt32(tmp, 0);
@@ -388,7 +338,7 @@ namespace BPCM
                         OurFrame.HederLength += 3;
                         break;
 
-                    case InfoByte.DataInfo.Silent:
+                    case DataInfo.Silent:
                         OurFrame.DataLength = 0;
                         break;
                 }
@@ -401,10 +351,10 @@ namespace BPCM
             OurFrame.DataOffset = i_Stream.Position - OurFrame.HederLength;
 
             //Volume info
-            ADPCM4BIT.VolumeInfo vi;
+            VolumeInfo[] vi;
 
             //In case we need to decode the actual frame
-            if ((DecodeFrame || DecodeAnyways) && ib.DataLengthInfo != InfoByte.DataInfo.Silent)
+            if ((DecodeFrame || DecodeAnyways) && ib.DataLengthInfo != DataInfo.Silent)
             {
                 //Before getting any data, first check if the stream ended
                 if (i_Stream.Position + OurFrame.DataLength > i_Stream.Length)
@@ -436,7 +386,7 @@ namespace BPCM
                 i_LastSampleCount = OurFrame.SampleCount;
             }
 
-            if (!DecodeFrame && !DecodeAnyways && ib.DataLengthInfo != InfoByte.DataInfo.Silent)
+            if (!DecodeFrame && !DecodeAnyways && ib.DataLengthInfo != DataInfo.Silent)
                 i_Stream.Seek(OurFrame.DataLength, SeekOrigin.Current);
 
             OurFrame.Duration = OurFrame.SampleCount / (double)OurFrame.SamplingRate;
@@ -495,7 +445,7 @@ namespace BPCM
 
                 //Collect possibly new compression type
                 string ctype_descr = frame.CompressionType.ToString().ToLower();
-                if (frame.CompressionType == InfoByte.CompressionType.None && frame.DataInfo == InfoByte.DataInfo.Silent) ctype_descr = "silence";
+                if (frame.CompressionType == CompressionType.None && frame.DataInfo == DataInfo.Silent) ctype_descr = "silence";
                 if (!ctypes.Contains(ctype_descr)) ctypes.Add(ctype_descr);
 
                 //Determine compression description
@@ -514,13 +464,13 @@ namespace BPCM
                 sum_samples += frame.SampleCount;
 
                 int currframe = frames.Count;
-                if (frame.DataInfo == InfoByte.DataInfo.Silent && frame.SampleCount > LastFrameDuration)
+                if (frame.DataInfo == DataInfo.Silent && frame.SampleCount > LastFrameDuration)
                 {
                     i_Stats.LongestSilentFrame = frame.SampleCount;
                     LastFrameDuration = frame.SampleCount;
                 }
                 //Histogram for non silent frames
-                if (frame.DataInfo != InfoByte.DataInfo.Silent)
+                if (frame.DataInfo != DataInfo.Silent)
                 {
                     bool success = FrmeSmplCtHistNonSlnt.TryGetValue(frame.SampleCount, out long val);
                     if (success) FrmeSmplCtHistNonSlnt[frame.SampleCount] = val + 1;
@@ -589,7 +539,7 @@ namespace BPCM
         //Constants
         private const byte Sync = 0xB1;
 
-        public static byte[] ComposeFrame(byte[] CompressedBPCMData, int SamplingRate, int NumberOfChannels, InfoByte.CompressionType Compression, bool WriteSampleCount = true, UInt32 NumberOfSamples = 0)
+        public static byte[] ComposeFrame(byte[] CompressedBPCMData, int SamplingRate, int NumberOfChannels, CompressionType Compression, bool WriteSampleCount = true, UInt32 NumberOfSamples = 0)
         {
             //Prepare info byte
             InfoByte ib = new InfoByte();
@@ -602,15 +552,15 @@ namespace BPCM
             if (!object.Equals(CompressedBPCMData, null))
             {
                 if (CompressedBPCMData.Length <= byte.MaxValue)
-                    ib.DataLengthInfo = InfoByte.DataInfo.LengthAddressingByte;
+                    ib.DataLengthInfo = DataInfo.LengthAddressingByte;
                 else if (CompressedBPCMData.Length > byte.MaxValue && CompressedBPCMData.Length <= ushort.MaxValue)
-                    ib.DataLengthInfo = InfoByte.DataInfo.LengthAddressingShort;
+                    ib.DataLengthInfo = DataInfo.LengthAddressingShort;
                 else if (CompressedBPCMData.Length > ushort.MaxValue)
-                    ib.DataLengthInfo = InfoByte.DataInfo.LengthAddressing24Bit;
+                    ib.DataLengthInfo = DataInfo.LengthAddressing24Bit;
             }
             else
             {
-                ib.DataLengthInfo = InfoByte.DataInfo.Silent;
+                ib.DataLengthInfo = DataInfo.Silent;
             }
 
             //Header length reminder
@@ -620,7 +570,7 @@ namespace BPCM
 
             //In case we have audio data
             byte[] FrameBinary;
-            if (ib.DataLengthInfo != InfoByte.DataInfo.Silent && !Equals(CompressedBPCMData, null))
+            if (ib.DataLengthInfo != DataInfo.Silent && !Equals(CompressedBPCMData, null))
             {
                 //Init byte array for output
                 FrameBinary = new byte[CompressedBPCMData.Length + HeaderLen + (int)ib.DataLengthInfo];
@@ -660,11 +610,11 @@ namespace BPCM
             {
                 //Figure out the sample number data type size, we use the compression type instead
                 if (NumberOfSamples <= byte.MaxValue)
-                    ib.Compression = InfoByte.CompressionType.BZIP2;
+                    ib.Compression = CompressionType.BZIP2;
                 else if (NumberOfSamples > byte.MaxValue && NumberOfSamples <= ushort.MaxValue)
-                    ib.Compression = InfoByte.CompressionType.LZMA;
+                    ib.Compression = CompressionType.LZMA;
                 else if (NumberOfSamples > ushort.MaxValue)
-                    ib.Compression = InfoByte.CompressionType.Arithmetic;
+                    ib.Compression = CompressionType.Arithmetic;
 
                 //Init byte array for output
                 FrameBinary = new byte[HeaderLen + (int)ib.Compression];

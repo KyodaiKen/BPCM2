@@ -2,6 +2,7 @@
 using System;
 using BPCM.Helpers;
 using NAudioLitle.Wave;
+using PCM;
 
 namespace BPCM
 {
@@ -65,11 +66,11 @@ namespace BPCM
                     for (int i = 0; i < silence.Length; i++) silence[i] = 0;
 
                     //Set volume info to silence
-                    frame.VolumeInfo = new ADPCM4BIT.VolumeInfo();
-                    frame.VolumeInfo.dbPeakL = double.NegativeInfinity;
-                    frame.VolumeInfo.dbPeakR = double.NegativeInfinity;
-                    frame.VolumeInfo.dbAvgL = double.NegativeInfinity;
-                    frame.VolumeInfo.dbAvgR = double.NegativeInfinity;
+                    frame.VolumeInfo = new VolumeInfo[2];
+                    frame.VolumeInfo[0].dbPeak = double.NegativeInfinity;
+                    frame.VolumeInfo[1].dbPeak = double.NegativeInfinity;
+                    frame.VolumeInfo[0].dbAvg = double.NegativeInfinity;
+                    frame.VolumeInfo[1].dbAvg = double.NegativeInfinity;
 
                     rb.Write(silence);
                 }
@@ -81,7 +82,7 @@ namespace BPCM
                 int newLen = buffer.Length;
                 if (newLen > rb.Count) newLen = rb.Count;
                 rb.Read(newLen).CopyTo(buffer, 0);
-                ADPCM4BIT.VolumeInfo vi = currentFrame.VolumeInfo;
+                VolumeInfo[] vi = currentFrame.VolumeInfo;
                 int cf = currentFrame.FrameNumber;
                 if (cf < 0) cf = 0;
                 if (cf >= streamBPCM.Analysis.FrameSet.Count) cf = streamBPCM.Analysis.FrameSet.Count - 1;

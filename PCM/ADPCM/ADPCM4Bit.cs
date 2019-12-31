@@ -33,14 +33,6 @@ namespace PCM.ADPCM
             public byte index_b;
         }
 
-        public struct VolumeInfo
-        {
-            public double dbPeakL { get; set; }
-            public double dbPeakR { get; set; }
-            public double dbAvgR { get; set; }
-            public double dbAvgL { get; set; }
-        }
-
         private State s;
         private Random r;
 
@@ -198,7 +190,7 @@ namespace PCM.ADPCM
             return Output;
         }
 
-        public byte[] decode(byte[] adpcmIn, out VolumeInfo vi, bool midside, bool enableInloopVolumeStats, bool enableDither, float volume = 1f)
+        public byte[] decode(byte[] adpcmIn, out VolumeInfo[] vi, bool midside, bool enableInloopVolumeStats, bool enableDither, float volume = 1f)
         {
             int ta, tb;
             uint i, pO;
@@ -218,11 +210,11 @@ namespace PCM.ADPCM
             uint pa = 0, pb = 0; //peak volume
             uint aa = 0, ab = 0; //average volume
 
-            vi = new VolumeInfo();
-            vi.dbPeakL = double.NegativeInfinity;
-            vi.dbPeakR = double.NegativeInfinity;
-            vi.dbAvgL = double.NegativeInfinity;
-            vi.dbAvgR = double.NegativeInfinity;
+            vi = new VolumeInfo[2];
+            vi[0].dbPeak = double.NegativeInfinity;
+            vi[1].dbPeak = double.NegativeInfinity;
+            vi[0].dbAvg = double.NegativeInfinity;
+            vi[1].dbAvg = double.NegativeInfinity;
 
             if (enableDither) r = new Random();
 
@@ -386,10 +378,10 @@ namespace PCM.ADPCM
                 //If the volume analysis was done, fill the object provided with the data
                 if (enableInloopVolumeStats)
                 {
-                    vi.dbPeakL = 20 * Math.Log10((double)pa / short.MaxValue);
-                    vi.dbPeakR = 20 * Math.Log10((double)pb / short.MaxValue);
-                    vi.dbAvgL = 20 * Math.Log10((double)aa / short.MaxValue);
-                    vi.dbAvgR = 20 * Math.Log10((double)ab / short.MaxValue);
+                    vi[0].dbPeak = 20 * Math.Log10((double)pa / short.MaxValue);
+                    vi[1].dbPeak = 20 * Math.Log10((double)pb / short.MaxValue);
+                    vi[0].dbAvg = 20 * Math.Log10((double)aa / short.MaxValue);
+                    vi[1].dbAvg = 20 * Math.Log10((double)ab / short.MaxValue);
                 }
             }
             catch { }
