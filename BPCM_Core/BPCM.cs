@@ -297,7 +297,7 @@ namespace BPCM.Easy
             {
                 //Initialize BPCM stream reader with or without delegation for the analysis progress update
                 BitstreamReader BPCM;
-                if (!progressUpdate.Equals(null))
+                if (progressUpdate != null)
                 {
                     void updateFunc(float progress)
                     {
