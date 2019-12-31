@@ -2,7 +2,7 @@
   "profiles": {
     "BPCM_CLI": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\bpcmfun\\g.bpcm2 -vol .09",
+      "commandLineArgs": "D:\\bpcmfun\\g.bpcm2 -vol .004 -od 1",
       "workingDirectory": "D:\\bpcmfun\\"
     }
   }

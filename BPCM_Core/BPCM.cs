@@ -532,7 +532,6 @@ namespace BPCM.Easy
                     if (mvol < 0) mvol = 0f;
                     _WaveOut.Volume = mvol;
                     _config.Volume = mvol;
-                    _BPCMStream.DecodingVolume = mvol;
                 }
             }
         }
@@ -591,7 +590,6 @@ namespace BPCM.Easy
         {
             _BPCMWaveProvider = new BPCMWaveProvider(_BPCMStream, _config.PlaybackRate);
             _BPCMWaveProvider.volume = 1;
-            _BPCMStream.DecodingVolume = _config.Volume;
             _BPCMWaveProvider.readDone = __INTERNAL_UpdatePosition;
             _WaveOut = new WaveOutEvent();
             _WaveOut.DeviceNumber = _config.WaveOutDevice;
@@ -600,6 +598,7 @@ namespace BPCM.Easy
             _WaveOut.Volume = _config.Volume;
             _WaveOut.PlaybackStopped += __INTERNAL_PlaybackStopped;
             _WaveOut.Init(_BPCMWaveProvider);
+            Volume = _config.Volume;
         }
 
         private void __INTERNAL_UpdatePosition(Frame frame)
