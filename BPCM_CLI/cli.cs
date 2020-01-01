@@ -542,7 +542,15 @@ namespace BPCM_CLI
                 var currTS = Info.CurrentFrame.TimeStamp;
                 TimeSpan tsnPos = TimeSpan.FromSeconds(currTS);
                 int days = tsnPos.Days; if (days > 9) days = 9; //Clamp days never to be more than 9.
-                string strPos = String.Format("{0}d {1:00}h {2:00}m {3:00}s {4:000}ms", days, tsnPos.Hours, tsnPos.Minutes, tsnPos.Seconds, Math.Round((currTS - Math.Floor(currTS)) * 1000));
+                string strPos = string.Format
+                (
+                      "{0}d {1:00}h {2:00}m {3:00}s {4:000}ms"
+                    , days
+                    , tsnPos.Hours
+                    , tsnPos.Minutes
+                    , tsnPos.Seconds
+                    , Math.Round((currTS - Math.Floor(currTS)) * 1000)
+                );
                 //Debug.WriteLine(strPos);
 
                 //Refresh the status line
