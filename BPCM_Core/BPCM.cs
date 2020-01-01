@@ -191,16 +191,11 @@ namespace BPCM.Easy
                         FrameEncodedCallback?.Invoke(new Stats()
                         {
                             FrameNumber = currentFrame
-                          ,
-                            TimeStamp = samplets
-                          ,
-                            FrameDuration = (nSamplesSilent > 0) ? nSamplesSilent / (double)w.Info.fmtHeader.nSamplesPerSec : nSamplesFromPCMBuffer / (double)w.Info.fmtHeader.nSamplesPerSec
-                          ,
-                            Bytes = frame.Length
-                          ,
-                            Bitrate = (int)Math.Round((double)frame.Length / (pcmBuffer.Length / w.Info.fmtHeader.nAvgBytesPerSeconds) * 8, 0)
-                          ,
-                            Compression = (Algorithm)compression
+                          , TimeStamp = samplets
+                          , FrameDuration = (nSamplesSilent > 0) ? nSamplesSilent / (double)w.Info.fmtHeader.nSamplesPerSec : nSamplesFromPCMBuffer / (double)w.Info.fmtHeader.nSamplesPerSec
+                          , Bytes = frame.Length
+                          , Bitrate = (int)Math.Round((double)frame.Length / (pcmBuffer.Length / w.Info.fmtHeader.nAvgBytesPerSeconds) * 8, 0)
+                          , Compression = (Algorithm)compression
                         });
 
                         frame = null;
@@ -211,20 +206,13 @@ namespace BPCM.Easy
                             StatusCallback?.Invoke(new Status()
                             {
                                 FramesEncoded = currentFrame
-                              ,
-                                AvgBitrate = (int)Math.Round((f.Length / precisepos) * 8.0, 0)
-                              ,
-                                Position = precisepos
-                              ,
-                                PositionSamples = samplets
-                              ,
-                                PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
-                              ,
-                                BytesWritten = f.Length
-                              ,
-                                Duration = w.Info.PCMDataLength / w.Info.fmtHeader.nAvgBytesPerSeconds
-                              ,
-                                DurationSamples = w.Info.PCMDataLength / w.Info.fmtHeader.nBlockAlign
+                              , AvgBitrate = (int)Math.Round((f.Length / precisepos) * 8.0, 0)
+                              , Position = precisepos
+                              , PositionSamples = samplets
+                              , PositionString = String.Format("{0:00}d {1:00}h {2:00}m {3:00}s {4:000.000}ms", pos.Days, pos.Hours, pos.Minutes, pos.Seconds, (precisepos - Math.Floor(precisepos)) * 1000)
+                              , BytesWritten = f.Length
+                              , Duration = w.Info.PCMDataLength / w.Info.fmtHeader.nAvgBytesPerSeconds
+                              , DurationSamples = w.Info.PCMDataLength / w.Info.fmtHeader.nBlockAlign
                             });
                             sw.Restart();
                         }
@@ -341,7 +329,7 @@ namespace BPCM.Easy
             using (FileStream s = new FileStream(bpcmFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.RandomAccess))
             {
                 BitstreamReader BPCM;
-                if (!config.AnalysisProgressUpdateEvent.Equals(null))
+                if (!(config.AnalysisProgressUpdateEvent is null))
                 {
                     void updateFunc(float progress)
                     {
@@ -376,7 +364,7 @@ namespace BPCM.Easy
                     , CompressionUsed = BPCM.Analysis.CompressionUsed
                     , CompressionUsedString = string.Join(", ", BPCM.Analysis.CompressionUsed.ToArray())
                     , FileSize = BPCM.BPCMStream.Length
-            });
+                });
 
                 BPCM.EnableDither = config.EnableDither;
 
@@ -684,7 +672,7 @@ namespace BPCM.Easy
 
             //Open the BPCM file
             _BPCMFile = new FileStream(bpcmFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, false);
-            if (_config.AnalysisUpdateEvent != null)
+            if (!(_config.AnalysisUpdateEvent is null))
             {
                 void AnalysisUpdtEvt(float progress)
                 {
@@ -697,7 +685,7 @@ namespace BPCM.Easy
             
             _BPCMStream.EnableDither = _config.EnableDithering;
 
-            if(_config.FileOpenedEvent != null)
+            if(!(_config.FileOpenedEvent is null))
             { 
                 double duration = (double)_BPCMStream.Analysis.DurationSampleCount / _BPCMStream.Analysis.FrameSet[0].SamplingRate;
                 TimeSpan dur = TimeSpan.FromSeconds(duration);
