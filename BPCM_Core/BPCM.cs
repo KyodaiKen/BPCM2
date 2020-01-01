@@ -683,7 +683,7 @@ namespace BPCM.Easy
             _config = config;
 
             //Open the BPCM file
-            _BPCMFile = new FileStream(bpcmFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.RandomAccess);
+            _BPCMFile = new FileStream(bpcmFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, false);
             if (_config.AnalysisUpdateEvent != null)
             {
                 void AnalysisUpdtEvt(float progress)
