@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "BPCM_Core": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\bpcmfun\\whateverworks_album.bpcm2",
+      "workingDirectory": "D:\\bpcmfun\\"
+    }
+  }
+}

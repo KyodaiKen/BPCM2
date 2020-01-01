@@ -7,43 +7,26 @@ using System.IO;
 
 namespace BPCM.CompressionHelper
 {
-    public struct Entropy
-        {
-            public double entropy;
-            public ulong minsize;
-        }
+    public struct Compressed
+    {
+        public byte[] data;
+        public CompressionType usedAlgo;
+    }
 
-        public struct Compressed
-        {
-            public byte[] data;
-            public InfoByte.CompressionType usedAlgo;
-        }
-
-        public enum Algorithm : byte
-        {
-            none = 0,
-            BZIP2 = 1,
-            lzma = 2,
-            arithmetic = 3,
-            fast = 4,
-            bruteForce = 10
-        }
-
-        
     public static class Compression
     {
-        private static byte[] InternalCompress(byte[] data, InfoByte.CompressionType algo = InfoByte.CompressionType.Arithmetic)
+        private static byte[] InternalCompress(byte[] data, CompressionType algo = CompressionType.Arithmetic)
         {
             byte[] dataCompr = Array.Empty<byte>();
 
             switch (algo)
             {
-                case InfoByte.CompressionType.LZMA:
+                case CompressionType.LZMA:
                 default:
                     dataCompr = SevenZipHelper.Compress(data);
                     break;
 
-                case InfoByte.CompressionType.BZIP2:
+                case CompressionType.BZIP2:
                     using (MemoryStream msOut = new MemoryStream())
                     {
                         msOut.Write(BitConverter.GetBytes(data.Length), 0, 4);
@@ -59,7 +42,7 @@ namespace BPCM.CompressionHelper
                     }
                     break;
 
-                case InfoByte.CompressionType.Arithmetic:
+                case CompressionType.Arithmetic:
                     AbstractModel ac = new ModelOrder0();
                     //data = threeRLEencode(data);
                     using (MemoryStream mcCompr = new MemoryStream())
@@ -82,21 +65,21 @@ namespace BPCM.CompressionHelper
             {
                 List<Compressed> clist = new List<Compressed>(3);
                 Compressed cadd = new Compressed();
-                cadd.data = InternalCompress(data, InfoByte.CompressionType.Arithmetic);
-                cadd.usedAlgo = InfoByte.CompressionType.Arithmetic;
+                cadd.data = InternalCompress(data, CompressionType.Arithmetic);
+                cadd.usedAlgo = CompressionType.Arithmetic;
                 clist.Add(cadd);
 
                 if (algo != Algorithm.fast)
                 {
                     cadd = new Compressed();
-                    cadd.data = InternalCompress(data, InfoByte.CompressionType.BZIP2);
-                    cadd.usedAlgo = InfoByte.CompressionType.BZIP2;
+                    cadd.data = InternalCompress(data, CompressionType.BZIP2);
+                    cadd.usedAlgo = CompressionType.BZIP2;
                     clist.Add(cadd);
                 }
 
                 cadd = new Compressed();
-                cadd.data = InternalCompress(data, InfoByte.CompressionType.LZMA);
-                cadd.usedAlgo = InfoByte.CompressionType.LZMA;
+                cadd.data = InternalCompress(data, CompressionType.LZMA);
+                cadd.usedAlgo = CompressionType.LZMA;
                 clist.Add(cadd);
 
                 int smallest = int.MaxValue;
@@ -115,20 +98,20 @@ namespace BPCM.CompressionHelper
             }
             else
             {
-                cret.data = InternalCompress(data, (InfoByte.CompressionType)algo);
-                cret.usedAlgo = (InfoByte.CompressionType)algo;
+                cret.data = InternalCompress(data, (CompressionType)algo);
+                cret.usedAlgo = (CompressionType)algo;
                 return cret;
             }
         }
 
-        public static byte[] Decompress(byte[] data, InfoByte.CompressionType comprUsed)
+        public static byte[] Decompress(byte[] data, CompressionType comprUsed)
         {
             byte[] dcd = Array.Empty<byte>();
             try
             {
                 switch (comprUsed)
                 {
-                    case InfoByte.CompressionType.Arithmetic:
+                    case CompressionType.Arithmetic:
                         AbstractModel ac = new ModelOrder0();
                         using (MemoryStream msd = new MemoryStream())
                         {
@@ -141,7 +124,7 @@ namespace BPCM.CompressionHelper
                         }
                         break;
 
-                    case InfoByte.CompressionType.BZIP2:
+                    case CompressionType.BZIP2:
                         using (MemoryStream msOut = new MemoryStream(data))
                         {
                             byte[] blen = new byte[4];
@@ -153,10 +136,10 @@ namespace BPCM.CompressionHelper
                         }
                         break;
 
-                    case InfoByte.CompressionType.LZMA:
+                    case CompressionType.LZMA:
                         return SevenZipHelper.Decompress(data);
 
-                    case InfoByte.CompressionType.None:
+                    case CompressionType.None:
                         return data;
                 }
             }

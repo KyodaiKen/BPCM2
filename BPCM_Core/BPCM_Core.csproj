@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Helpers\CSV.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Helpers\CSV.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Compressors\Compressors.csproj" />
+    <ProjectReference Include="..\NAudioLite\NAudioLite.csproj" />
+    <ProjectReference Include="..\PCM\Pcm.csproj" />
+  </ItemGroup>
+
+</Project>

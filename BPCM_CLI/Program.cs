@@ -454,8 +454,8 @@ namespace BPCM_CLI
 
                 //Refresh the status line
                 Console.CursorLeft = 0;
-                Console.Write(strFbI + strALR + "{0,21}" + strFbI + "{1," + fnumLen + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "x{5,4}" + strFbI,
-                                strPos, currFrame + 1, Math.Round(((CurrentFrame.DataLength + CurrentFrame.HederLength) / CurrentFrame.Duration) * 8, 0), CurrentFrame.CompressionTypeDescr, Math.Round(wavOut.Volume * 100, 1), speed);
+                Console.Write(strFbI + strALR + "{0,21}" + strFbI + "{1," + fnumLen + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "x{5,4:0.##}" + strFbI,
+                                strPos, currFrame + 1, Math.Round(((CurrentFrame.DataLength + CurrentFrame.HederLength) / CurrentFrame.Duration) * 8, 0), CurrentFrame.CompressionTypeDescr, Math.Round(wavOut.Volume * 100, 1), Math.Round(speed, 2));
 
                 //Calculate bar length from dB value.
                 const int max = 57, lowpoint = 62; //lowpoint is the positive value of the minus dB the scale will start
@@ -596,163 +596,177 @@ namespace BPCM_CLI
             while (!exit)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
-                switch (key.Modifiers)
+                if (key.Modifiers == ConsoleModifiers.Control)
                 {
-                    case ConsoleModifiers.Control:
-                        switch (key.Key)
-                        {
-                            case ConsoleKey.UpArrow:
-                            case ConsoleKey.VolumeUp:
-                                if (wavOut.Volume + 0.001f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.001f;
-                                break;
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                        case ConsoleKey.VolumeUp:
+                            if (wavOut.Volume + 0.001f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.001f;
+                            break;
 
-                            case ConsoleKey.DownArrow:
-                            case ConsoleKey.VolumeDown:
-                                if (wavOut.Volume - 0.001f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.001f;
-                                break;
+                        case ConsoleKey.DownArrow:
+                        case ConsoleKey.VolumeDown:
+                            if (wavOut.Volume - 0.001f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.001f;
+                            break;
 
-                            case ConsoleKey.LeftArrow:
-                                p.Seek(currTS - 1);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.LeftArrow:
+                            p.Seek(currTS - 1);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.RightArrow:
-                                p.Seek(currTS + 1);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.RightArrow:
+                            p.Seek(currTS + 1);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.S:
-                                if (speed - 0.01 <= 0.01f) speed = 0.01; else speed -= 0.01;
-                                changeRate();
-                                break;
+                        case ConsoleKey.S:
+                            if (speed - 0.01 <= 0.01f) speed = 0.01; else speed -= 0.01;
+                            changeRate();
+                            break;
 
-                            case ConsoleKey.F:
-                                if (speed + 0.01 >= 4.0f) speed = 4.0; else speed += 0.01;
-                                changeRate();
-                                break;
-                        }
-                        break;
+                        case ConsoleKey.F:
+                            if (speed + 0.01 >= 4.0f) speed = 4.0; else speed += 0.01;
+                            changeRate();
+                            break;
+                    }
+                }
+                else if (key.Modifiers == (ConsoleModifiers.Control | ConsoleModifiers.Shift))
+                {
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.LeftArrow:
+                            p.Seek(currTS - 60);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                    default:
-                        switch (key.Key)
-                        {
-                            case ConsoleKey.UpArrow:
-                            case ConsoleKey.VolumeUp:
-                                if (wavOut.Volume + 0.01f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.01f;
-                                break;
+                        case ConsoleKey.RightArrow:
+                            p.Seek(currTS + 60);
+                            bpcmWP.DropRingBuffer();
+                            break;
+                    }
+                }
+                else
+                {
 
-                            case ConsoleKey.DownArrow:
-                            case ConsoleKey.VolumeDown:
-                                if (wavOut.Volume - 0.01f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.01f;
-                                break;
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                        case ConsoleKey.VolumeUp:
+                            if (wavOut.Volume + 0.01f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.01f;
+                            break;
 
-                            case ConsoleKey.PageUp:
-                                if (wavOut.Volume + 0.1f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.1f;
-                                break;
+                        case ConsoleKey.DownArrow:
+                        case ConsoleKey.VolumeDown:
+                            if (wavOut.Volume - 0.01f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.01f;
+                            break;
 
-                            case ConsoleKey.PageDown:
-                                if (wavOut.Volume - 0.1f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.1f;
-                                break;
+                        case ConsoleKey.PageUp:
+                            if (wavOut.Volume + 0.1f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.1f;
+                            break;
 
-                            case ConsoleKey.LeftArrow:
-                                p.Seek(currTS - 5d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.PageDown:
+                            if (wavOut.Volume - 0.1f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.1f;
+                            break;
 
-                            case ConsoleKey.RightArrow:
-                                p.Seek(currTS + 5d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.LeftArrow:
+                            p.Seek(currTS - 5d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D1:
-                                p.Seek(60d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.RightArrow:
+                            p.Seek(currTS + 5d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D2:
-                                p.Seek(120d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D1:
+                            p.Seek(60d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D3:
-                                p.Seek(180d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D2:
+                            p.Seek(120d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D4:
-                                p.Seek(240d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D3:
+                            p.Seek(180d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D5:
-                                p.Seek(300d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D4:
+                            p.Seek(240d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D6:
-                                p.Seek(360d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D5:
+                            p.Seek(300d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D7:
-                                p.Seek(420d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D6:
+                            p.Seek(360d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D8:
-                                p.Seek(480d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D7:
+                            p.Seek(420d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D9:
-                                p.Seek(540d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D8:
+                            p.Seek(480d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D0:
-                                p.Seek(600d);
-                                bpcmWP.DropRingBuffer();
-                                break;
+                        case ConsoleKey.D9:
+                            p.Seek(540d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.S:
-                                if (speed - 0.1 <= 0.01f) speed = 0.01; else speed -= 0.1;
-                                changeRate();
-                                break;
+                        case ConsoleKey.D0:
+                            p.Seek(600d);
+                            bpcmWP.DropRingBuffer();
+                            break;
 
-                            case ConsoleKey.D:
-                                speed = 1f;
-                                changeRate();
-                                break;
+                        case ConsoleKey.S:
+                            if (speed - 0.1 <= 0.01f) speed = 0.01; else speed -= 0.1;
+                            changeRate();
+                            break;
 
-                            case ConsoleKey.F:
-                                if (speed + 0.1 >= 4.0f) speed = 4.0; else speed += 0.1;
-                                changeRate();
-                                break;
+                        case ConsoleKey.D:
+                            speed = 1f;
+                            changeRate();
+                            break;
 
-                            case ConsoleKey.Home:
-                                p.Seek(0);
-                                break;
+                        case ConsoleKey.F:
+                            if (speed + 0.1 >= 4.0f) speed = 4.0; else speed += 0.1;
+                            changeRate();
+                            break;
 
-                            case ConsoleKey.Spacebar:
-                                switch (wavOut.PlaybackState)
-                                {
-                                    case PlaybackState.Playing:
-                                        wavOut.Pause();
-                                        break;
+                        case ConsoleKey.Home:
+                            p.Seek(0);
+                            break;
 
-                                    case PlaybackState.Paused:
-                                        wavOut.Play();
-                                        break;
-                                }
-                                break;
+                        case ConsoleKey.Spacebar:
+                            switch (wavOut.PlaybackState)
+                            {
+                                case PlaybackState.Playing:
+                                    wavOut.Pause();
+                                    break;
 
-                            case ConsoleKey.Escape:
-                            case ConsoleKey.Q:
-                                Console.CursorTop -= 10;
-                                exitNow();
-                                break;
-                        }
-                        break;
+                                case PlaybackState.Paused:
+                                    wavOut.Play();
+                                    break;
+                            }
+                            break;
+
+                        case ConsoleKey.Escape:
+                        case ConsoleKey.Q:
+                            Console.CursorTop -= 10;
+                            exitNow();
+                            break;
+                    }
                 }
             }
             p = null;

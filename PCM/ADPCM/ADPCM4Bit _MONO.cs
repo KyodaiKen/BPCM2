@@ -143,7 +143,7 @@ namespace PCM.ADPCM
             return Output;
         }
 
-        public byte[] decode(byte[] adpcmIn, out ADPCM4BIT.VolumeInfo vi, bool enableInloopVolumeStats, float volume = 1f)
+        public byte[] decode(byte[] adpcmIn, out VolumeInfo vi, bool enableInloopVolumeStats, float volume = 1f)
         {
             uint i, pO;
             byte[] Output = new byte[(adpcmIn.Length - 3) * 4];
@@ -159,11 +159,9 @@ namespace PCM.ADPCM
 
             uint pv = 0; //peak volume
             uint av = 0; //average volume
-            vi = new ADPCM4BIT.VolumeInfo();
-            vi.dbPeakL = double.NegativeInfinity;
-            vi.dbPeakR = double.NegativeInfinity;
-            vi.dbAvgL = double.NegativeInfinity;
-            vi.dbAvgR = double.NegativeInfinity;
+            vi = new VolumeInfo();
+            vi.dbPeak = double.NegativeInfinity;
+            vi.dbAvg = double.NegativeInfinity;
 
             try
             {
@@ -280,10 +278,8 @@ namespace PCM.ADPCM
 
                 if (enableInloopVolumeStats)
                 {
-                    vi.dbPeakL = 20 * Math.Log10((double)pv / short.MaxValue);
-                    vi.dbPeakR = 20 * Math.Log10((double)pv / short.MaxValue);
-                    vi.dbAvgL = 20 * Math.Log10((double)av / short.MaxValue);
-                    vi.dbAvgR = 20 * Math.Log10((double)av / short.MaxValue);
+                    vi.dbPeak = 20 * Math.Log10((double)pv / short.MaxValue);
+                    vi.dbAvg = 20 * Math.Log10((double)av / short.MaxValue);
                 }
             }
             catch { }
