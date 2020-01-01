@@ -481,7 +481,7 @@ namespace BPCM
                 if (success1) FrmeSmplCtHist[frame.SampleCount] = val1 + 1;
                 else FrmeSmplCtHist.Add(frame.SampleCount, 1);
 
-                if (sw.Elapsed.TotalMilliseconds >= (double)1000 / 15) //15 FPS
+                if (sw.Elapsed.TotalMilliseconds >= (double)100) //10 FPS
                 {
                     i_AnalysisProgressUpdate?.Invoke((float)i_Stream.Position / i_Stream.Length * 100f);
                     sw.Restart();
