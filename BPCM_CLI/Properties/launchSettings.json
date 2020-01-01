@@ -2,7 +2,7 @@
   "profiles": {
     "BPCM_CLI": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\bpcmfun\\g.bpcm2",
+      "commandLineArgs": "D:\\bpcmfun\\xray.bpcm2",
       "workingDirectory": "D:\\bpcmfun\\"
     }
   }

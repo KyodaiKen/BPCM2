@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace BPCM.Easy
 {
@@ -608,7 +609,6 @@ namespace BPCM.Easy
         {
             //Set position property memory value
             _pos = frame.TimeStamp;
-            _stopping = false;
 
             //Invoke position change event
             PlaybackUpdateEvent?.Invoke(new PlaybackUpdateInfo()
@@ -617,26 +617,34 @@ namespace BPCM.Easy
                 PlaybackRate = PlaybackRate,
                 Volume = Volume
             });
+
+            _stopping = false;
+            _seeking = false;
         }
 
         private void __INTERNAL_Seek(double pos)
         {
             _seeking = true;
             _BPCMStream.Seek(pos);
-            _seeking = false;
+            _BPCMWaveProvider.DropRingBuffer();
         }
 
         private void __INTERNAL_ChangeRate()
         {
-            _stopping = true;
-            _WaveOut.Stop();
+            /*** Bugfix for random crashes and bitstream errors --> */
+            _WaveOut.PlaybackStopped -= __INTERNAL_PlaybackStopped;
+            //_WaveOut.Stop();
+            /* <-- */
             _WaveOut.Dispose();
             _WaveOut = null;
             _BPCMWaveProvider = null;
-            GC.Collect();
+            /*** Bugfix for random crashes and bitstream errors --> */
+            //GC.Collect();
+            Thread.Sleep(50); //Wait 50ms for things to settle
+            _BPCMStream.Seek(_BPCMStream.FramesDecoded - 2); //Compensate jump
+            /* <-- */
             __INTERNAL_WaveOutInit();
             _WaveOut.Play();
-            _stopping = false;
             _playing = true;
         }
 
