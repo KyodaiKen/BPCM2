@@ -233,42 +233,50 @@ namespace BPCM_CLI
                 if (analyze)
                 {
                     Decoder.Info inf = Decoder.AnalyzeFile(infile);
-                    string JSON =
-                       "{\"SamplingRate\":" + inf.SamplingRate + ","
-                     + "\"NumberOfChannels\":" + inf.NumberOfChannels + ","
-                     + "\"BitrateAvg\":" + inf.BitrateAvg + ","
-                     + "\"BitrateMin\":" + inf.BitrateMin + ","
-                     + "\"BitrateMax\":" + inf.BitrateMax + ","
-                     + "\"BlockSizeNominal\":" + inf.BlockSizeNominal + ","
-                     + "\"BlockSizeAverage\":" + inf.BlockSizeAverage + ","
-                     + "\"BlockSizeMinimum\":" + inf.BlockSizeMinimum + ","
-                     + "\"BlockSizeMaximum\":" + inf.BlockSizeMaximum + ","
-                     + "\"CompressionUsedString\":\"" + inf.CompressionUsedString + "\","
-                     + "\"Duration\":" + inf.Duration.ToString() + ","
-                     + "\"DurationSampleCount\":" + inf.DurationSampleCount + ","
-                     + "\"DurationString\":\"" + inf.DurationString + "\","
-                     + "\"FrameCount\":" + inf.FrameSet.Count + ","
-                     + "\"Frames\":{";
+                    var JSON = new System.Text.StringBuilder();
+                    string sep = string.Empty;
+                    JSON.Append("{\"SamplingRate\":" + inf.SamplingRate.ToString()).Append(',')
+                        .Append("\"NumberOfChannels\":" + inf.NumberOfChannels.ToString()).Append(',')
+                        .Append("\"BitrateAvg\":" + inf.BitrateAvg.ToString()).Append(',')
+                        .Append("\"BitrateMin\":").Append(inf.BitrateMin.ToString()).Append(',')
+                        .Append("\"BitrateMax\":").Append(inf.BitrateMax.ToString()).Append(',')
+                        .Append("\"BlockSizeNominal\":").Append(inf.BlockSizeNominal.ToString()).Append(',')
+                        .Append("\"BlockSizeAverage\":").Append(inf.BlockSizeAverage.ToString()).Append(',')
+                        .Append("\"BlockSizeMinimum\":").Append(inf.BlockSizeMinimum.ToString()).Append(',')
+                        .Append("\"BlockSizeMaximum\":").Append(inf.BlockSizeMaximum.ToString()).Append(',')
+                        .Append("\"CompressionUsedString\":\"").Append(inf.CompressionUsedString).Append("\",")
+                        .Append("\"Duration\":").Append(inf.Duration.ToString()).Append(',')
+                        .Append("\"DurationSampleCount\":").Append(inf.DurationSampleCount.ToString()).Append(',')
+                        .Append("\"DurationString\":\"").Append(inf.DurationString).Append("\",")
+                        .Append("\"FrameCount\":").Append(inf.FrameSet.Count.ToString()).Append(',')
+                        .Append("\"Frames\":{");
+
                     foreach (Frame f in inf.FrameSet)
                     {
-                        JSON = string.Concat(new string[] {
-                            JSON, "\"", f.FrameNumber.ToString(), "\":"
-                         , "{\"Channels\":", f.Channels.ToString(), ","
-                         , "\"CompressionType\":\"", f.CompressionTypeDescr, "\","
-                         , "\"DataLength\":", f.DataLength.ToString(), ","
-                         , "\"DataOffset\":", f.DataOffset.ToString(), ","
-                         , "\"SampleCount\":", f.SampleCount.ToString(), ","
-                         , "\"Duration\":", f.Duration.ToString(), ","
-                         , "\"HederLength\":", f.HederLength.ToString(), ","
-                         , "\"TimeStamp\":", f.TimeStamp.ToString(), "},"});
+                        JSON.Append(sep);
+                        sep = ",";
+                        JSON.Append("\"").Append(f.FrameNumber.ToString()).Append("\":")
+                            .Append("{\"Channels\":").Append(f.Channels.ToString()).Append(",")
+                            .Append("\"CompressionType\":\"").Append(f.CompressionTypeDescr).Append("\",")
+                            .Append("\"DataLength\":").Append(f.DataLength.ToString()).Append(",")
+                            .Append("\"DataOffset\":").Append(f.DataOffset.ToString()).Append(",")
+                            .Append("\"SampleCount\":").Append(f.SampleCount.ToString()).Append(",")
+                            .Append("\"Duration\":").Append(f.Duration.ToString()).Append(",")
+                            .Append("\"HederLength\":").Append(f.HederLength.ToString()).Append(",")
+                            .Append("\"TimeStamp\":").Append(f.TimeStamp.ToString()).Append("}");
                     }
-                    JSON = JSON.Substring(0, JSON.Length - 1);
-                    JSON = JSON + "},\"FrameLengthHistogram\":{";
+
+                    JSON.Append("},\"FrameLengthHistogram\":{");
+                    sep = string.Empty;
                     foreach (KeyValuePair<int, long> p in inf.FrameSampleCountHistogram)
-                        JSON = string.Concat(new string[] { JSON, "\"", p.Key.ToString(), "\":", p.Value.ToString(), "," });
-                    JSON = JSON.Substring(0, JSON.Length - 1);
-                    JSON = JSON + "}}";
-                    Console.Write(JSON);
+                    {
+                        JSON.Append(sep);
+                        sep = ",";
+                        JSON.Append("\"" + p.Key.ToString()).Append("\":").Append(p.Value.ToString());
+                    }
+
+                    JSON.Append("}}");
+                    Console.Write(JSON.ToString());
                     return 0;
                 }
 

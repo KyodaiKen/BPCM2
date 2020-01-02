@@ -329,17 +329,17 @@ namespace BPCM.Easy
             using (FileStream s = new FileStream(bpcmFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, FileOptions.RandomAccess))
             {
                 BitstreamReader BPCM;
-                if (!(config.AnalysisProgressUpdateEvent is null))
+                if (config.AnalysisProgressUpdateEvent is null)
+                {
+                    BPCM = new BitstreamReader(s);
+                }
+                else
                 {
                     void updateFunc(float progress)
                     {
                         config.AnalysisProgressUpdateEvent.Invoke(progress);
                     }
                     BPCM = new BitstreamReader(s, aupevt: updateFunc);
-                }
-                else
-                {
-                    BPCM = new BitstreamReader(s);
                 }
 
                 double duration = (double)BPCM.Analysis.DurationSampleCount / BPCM.Analysis.FrameSet[0].SamplingRate;
