@@ -34,11 +34,11 @@ namespace PCM.SevenZip.Compression.LZMA
                    {
                     (Int32)(dictionary),
                     (Int32)(0),
-                    (Int32)(2),
+                    (Int32)(1),
                     (Int32)(0),
                     (Int32)(0),
-                    (Int32)(128),
-                    "bt2",
+                    (Int32)(273),
+                    "bt4",
                     eos
                 };
 
@@ -81,9 +81,7 @@ namespace PCM.SevenZip.Compression.LZMA
             long compressedSize = newInStream.Length - newInStream.Position;
             decoder.Code(newInStream, newOutStream, compressedSize, outSize, null);
 
-            byte[] b = newOutStream.ToArray();
-
-            return b;
+            return newOutStream.ToArray();
         }
     }
 }

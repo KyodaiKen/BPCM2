@@ -27,8 +27,8 @@ namespace BPCM_CLI
             Console.WriteLine("-c     string    Use specific compression method");
             Console.WriteLine("                   ► none");
             Console.WriteLine("                   ► ac (Arithmetic order0)");
-            Console.WriteLine("                   ► BZIP2");
-            Console.WriteLine("                   ► LZMA");
+            Console.WriteLine("                   ► brotli");
+            Console.WriteLine("                   ► lzma");
             Console.WriteLine("                   ► fast  (use best result of LZMA and ac [DEFAULT] [RECOMMENDED!]),");
             Console.WriteLine("                   ► brute (use best result of all)");
             Console.WriteLine("-bs    number    Sets the block size in milliseconds, default is 100 ms");
@@ -319,8 +319,8 @@ namespace BPCM_CLI
                                 algorithm = Algorithm.none;
                                 break;
 
-                            case "bzip2":
-                                algorithm = Algorithm.BZIP2;
+                            case "brotli":
+                                algorithm = Algorithm.brotli;
                                 break;
 
                             case "lzma":

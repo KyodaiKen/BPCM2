@@ -2,7 +2,7 @@
   "profiles": {
     "BPCM_CLI": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\bpcmfun\\xray.bpcm2",
+      "commandLineArgs": "\"D:\\Daten\\Music\\Camouflage\\X-Ray (Single)\\01 X-Ray (Video Version).bpcm2\" -c brute",
       "workingDirectory": "D:\\bpcmfun\\"
     }
   }

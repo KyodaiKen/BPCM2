@@ -283,7 +283,7 @@ namespace BPCM
                 OurFrame.DataLength = 0;
                 switch (ib.Compression)
                 {
-                    case CompressionType.BZIP2:
+                    case CompressionType.brotli:
                         OurFrame.SampleCount = i_Stream.ReadByte();
                         OurFrame.HederLength += 1;
                         break;
@@ -610,7 +610,7 @@ namespace BPCM
             {
                 //Figure out the sample number data type size, we use the compression type instead
                 if (NumberOfSamples <= byte.MaxValue)
-                    ib.Compression = CompressionType.BZIP2;
+                    ib.Compression = CompressionType.brotli;
                 else if (NumberOfSamples > byte.MaxValue && NumberOfSamples <= ushort.MaxValue)
                     ib.Compression = CompressionType.LZMA;
                 else if (NumberOfSamples > ushort.MaxValue)

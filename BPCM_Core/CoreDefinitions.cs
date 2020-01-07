@@ -15,7 +15,7 @@ namespace BPCM
     public enum CompressionType : byte
     {
         None = 0,
-        BZIP2 = 1,
+        brotli = 1,
         LZMA = 2,
         Arithmetic = 3
     }
@@ -23,7 +23,7 @@ namespace BPCM
     public enum Algorithm : byte
     {
         none = 0,
-        BZIP2 = 1,
+        brotli = 1,
         lzma = 2,
         arithmetic = 3,
         fast = 4,

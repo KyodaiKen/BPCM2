@@ -9,4 +9,12 @@
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="ADPCM\ADPCM.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ADPCM\ADPCM.cs" />
+  </ItemGroup>
+
 </Project>

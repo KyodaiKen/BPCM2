@@ -1,9 +1,9 @@
 ﻿using PCM.Arithmetic;
-using PCM.BZip2;
 using PCM.SevenZip.Compression.LZMA;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 
 namespace BPCM.CompressionHelper
 {
@@ -26,8 +26,8 @@ namespace BPCM.CompressionHelper
                     dataCompr = SevenZipHelper.Compress(data);
                     break;
 
-                case CompressionType.BZIP2:
-                    using (MemoryStream msOut = new MemoryStream())
+                case CompressionType.brotli:
+                    /*using (MemoryStream msOut = new MemoryStream())
                     {
                         msOut.Write(BitConverter.GetBytes(data.Length), 0, 4);
                         using (ParallelBZip2OutputStream c = new ParallelBZip2OutputStream(msOut, 9, true))
@@ -39,7 +39,16 @@ namespace BPCM.CompressionHelper
                             msOut.Flush();
                             dataCompr = msOut.ToArray();
                         }
+                    }*/
+
+                    dataCompr = new byte[data.Length];
+                    using (var be = new BrotliEncoder(11, 10))
+                    {
+                        int shit1, written;
+                        be.Compress(new Span<byte>(data), dataCompr, out shit1, out written, true);
+                        Array.Resize(ref dataCompr, written);
                     }
+
                     break;
 
                 case CompressionType.Arithmetic:
@@ -72,8 +81,8 @@ namespace BPCM.CompressionHelper
                 if (algo != Algorithm.fast)
                 {
                     cadd = new Compressed();
-                    cadd.data = InternalCompress(data, CompressionType.BZIP2);
-                    cadd.usedAlgo = CompressionType.BZIP2;
+                    cadd.data = InternalCompress(data, CompressionType.brotli);
+                    cadd.usedAlgo = CompressionType.brotli;
                     clist.Add(cadd);
                 }
 
@@ -124,8 +133,8 @@ namespace BPCM.CompressionHelper
                         }
                         break;
 
-                    case CompressionType.BZIP2:
-                        using (MemoryStream msOut = new MemoryStream(data))
+                    case CompressionType.brotli:
+                        /*using (MemoryStream msOut = new MemoryStream(data))
                         {
                             byte[] blen = new byte[4];
                             msOut.Read(blen, 0, 4);
@@ -133,8 +142,20 @@ namespace BPCM.CompressionHelper
                             using BZip2InputStream d = new BZip2InputStream(msOut);
                             dcd = new byte[len];
                             d.Read(dcd, 0, dcd.Length);
+                        }*/
+
+                        var decompressedData = new Span<byte>(new byte[48006]);
+
+                        int shit1, written;
+                        System.Buffers.OperationStatus succ;
+                        using (var bd = new BrotliDecoder())
+                        {
+                            succ = bd.Decompress(new Span<byte>(data), decompressedData, out shit1, out written);
                         }
-                        break;
+                        var dec_data = decompressedData.ToArray();
+                        decompressedData.Clear();
+                        if(dec_data.Length>written) Array.Resize(ref dec_data, written);
+                        return dec_data;
 
                     case CompressionType.LZMA:
                         return SevenZipHelper.Decompress(data);
