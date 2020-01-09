@@ -42,7 +42,7 @@ namespace BPCM.CompressionHelper
                     }*/
 
                     dataCompr = new byte[data.Length];
-                    using (var be = new BrotliEncoder(11, 10))
+                    using (var be = new BrotliEncoder(11, 12))
                     {
                         int shit1, written;
                         be.Compress(new Span<byte>(data), dataCompr, out shit1, out written, true);
