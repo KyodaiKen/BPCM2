@@ -263,8 +263,8 @@ namespace BPCM.Easy
             public int BlockSizeMaximum;
             public int BlockSizeNominal;
 
-            public Dictionary<int, long>
-                                FrameSampleCountHistogram;
+            public Dictionary<int, long> FrameSampleCountHistogram;
+            public Dictionary<string, long> FrameCompressionHistogram;
 
             public List<Frame> FrameSet;
             public List<string> CompressionUsed;
@@ -317,6 +317,7 @@ namespace BPCM.Easy
                     , BlockSizeMaximum = BPCM.Analysis.BlockSizeMaximum
                     , BlockSizeMinimum = BPCM.Analysis.BlockSizeMinimum
                     , FrameSampleCountHistogram = BPCM.Analysis.FrameSampleCountHistogram
+                    , FrameCompressionHistogram = BPCM.Analysis.CompressionHistogram
                     , FrameSet = BPCM.Analysis.FrameSet
                     , CompressionUsed = BPCM.Analysis.CompressionUsed
                     , CompressionUsedString = string.Join(", ", BPCM.Analysis.CompressionUsed.ToArray())
@@ -360,6 +361,7 @@ namespace BPCM.Easy
                     , BlockSizeMaximum = BPCM.Analysis.BlockSizeMaximum
                     , BlockSizeMinimum = BPCM.Analysis.BlockSizeMinimum
                     , FrameSampleCountHistogram = BPCM.Analysis.FrameSampleCountHistogram
+                    , FrameCompressionHistogram = BPCM.Analysis.CompressionHistogram
                     , FrameSet = BPCM.Analysis.FrameSet
                     , CompressionUsed = BPCM.Analysis.CompressionUsed
                     , CompressionUsedString = string.Join(", ", BPCM.Analysis.CompressionUsed.ToArray())
@@ -628,7 +630,7 @@ namespace BPCM.Easy
             _BPCMWaveProvider = null;
             /*** Bugfix for random crashes and bitstream errors --> */
             //GC.Collect();
-            Thread.Sleep(50); //Wait 50ms for things to settle
+            Thread.Sleep(10); //Wait 10ms for things to settle
             _BPCMStream.Seek(_BPCMStream.FramesDecoded - 2); //Compensate jump
             /* <-- */
             __INTERNAL_WaveOutInit();
@@ -706,6 +708,7 @@ namespace BPCM.Easy
                     , BlockSizeMaximum = _BPCMStream.Analysis.BlockSizeMaximum
                     , BlockSizeMinimum = _BPCMStream.Analysis.BlockSizeMinimum
                     , FrameSampleCountHistogram = _BPCMStream.Analysis.FrameSampleCountHistogram
+                    , FrameCompressionHistogram = _BPCMStream.Analysis.CompressionHistogram
                     , FrameSet = _BPCMStream.Analysis.FrameSet
                     , CompressionUsed = _BPCMStream.Analysis.CompressionUsed
                     , CompressionUsedString = string.Join(", ", _BPCMStream.Analysis.CompressionUsed.ToArray())

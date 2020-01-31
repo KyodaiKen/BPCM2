@@ -65,6 +65,7 @@ namespace BPCM
         public List<Frame> FrameSet;
         public List<string> CompressionUsed;
         public Dictionary<int, long> FrameSampleCountHistogram;
+        public Dictionary<string, long> CompressionHistogram;
     }
     #endregion Structures
 }

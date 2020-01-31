@@ -275,6 +275,15 @@ namespace BPCM_CLI
                         JSON.Append("\"" + p.Key.ToString()).Append("\":").Append(p.Value.ToString());
                     }
 
+                    JSON.Append("},\"FrameCompressionHistogram\":{");
+                    sep = string.Empty;
+                    foreach (KeyValuePair<string, long> p in inf.FrameCompressionHistogram)
+                    {
+                        JSON.Append(sep);
+                        sep = ",";
+                        JSON.Append("\"" + p.Key).Append("\":").Append(p.Value.ToString());
+                    }
+
                     JSON.Append("}}");
                     Console.Write(JSON.ToString());
                     return 0;
@@ -471,6 +480,8 @@ namespace BPCM_CLI
 
             void FileOpened(Decoder.Info inf)
             {
+                Console.CursorLeft = 0;
+                Console.Write(string.Concat(Enumerable.Repeat(" ", Console.BufferWidth - 1)));
                 Console.CursorLeft = 0;
                 Console.WriteLine("{0,-20} {1}", "File path:", new FileInfo(BPCMFile).Directory.FullName);
                 Console.WriteLine("{0,-20} {1}", "File name:", new FileInfo(BPCMFile).Name);

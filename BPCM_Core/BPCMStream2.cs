@@ -417,8 +417,9 @@ namespace BPCM
             long sum_bpcm_bytes = 0;
             long sum_samples = 0;
             long LastFrameDuration = 0;
-            Dictionary<int, long> FrmeSmplCtHistNonSlnt = new Dictionary<int, long>();
-            Dictionary<int, long> FrmeSmplCtHist = new Dictionary<int, long>();
+            var FrmeSmplCtHistNonSlnt = new Dictionary<int, long>();
+            var FrmeSmplCtHist = new Dictionary<int, long>();
+            var FrmeComprHist = new Dictionary<string, long>();
 
             //Frameset
             List<Frame> frames = new List<Frame>();
@@ -477,9 +478,11 @@ namespace BPCM
                     else FrmeSmplCtHistNonSlnt.Add(frame.SampleCount, 1);
                 }
                 //Histogram for all frames
-                bool success1 = FrmeSmplCtHist.TryGetValue(frame.SampleCount, out long val1);
-                if (success1) FrmeSmplCtHist[frame.SampleCount] = val1 + 1;
-                else FrmeSmplCtHist.Add(frame.SampleCount, 1);
+                var success1 = FrmeSmplCtHist.TryGetValue(frame.SampleCount, out var val1);
+                if (success1) FrmeSmplCtHist[frame.SampleCount] = val1 + 1; else FrmeSmplCtHist.Add(frame.SampleCount, 1);
+
+                var success2 = FrmeComprHist.TryGetValue(ctype_descr, out var val2);
+                if (success2) FrmeComprHist[ctype_descr] = val2 + 1; else FrmeComprHist.Add(ctype_descr, 1);
 
                 if (sw.Elapsed.TotalMilliseconds >= (double)100) //10 FPS
                 {
@@ -497,6 +500,7 @@ namespace BPCM
             i_Stats.DurationSampleCount = sum_samples;
             i_Stats.CompressionUsed = ctypes;
             i_Stats.FrameSampleCountHistogram = FrmeSmplCtHist;
+            i_Stats.CompressionHistogram = FrmeComprHist;
             long ct = 0;
             foreach (KeyValuePair<int, long> kv in FrmeSmplCtHistNonSlnt)
             {
