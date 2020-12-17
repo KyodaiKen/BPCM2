@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BPCM_Core\BPCM_Core.csproj" />
+    <ProjectReference Include="..\BPCM_PLAYER\BPCM_PLAYER.csproj" />
   </ItemGroup>
 
 </Project>

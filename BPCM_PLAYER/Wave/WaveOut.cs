@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace BPCM.Wave
+namespace BPCM_PLAYER.Wave
 {
     /// <summary>
     /// Represents a wave out device

@@ -1,7 +1,6 @@
 ﻿using BPCM;
 using BPCM.Easy;
-using BPCM.Wave;
-using NAudioLitle.Wave;
+using BPCM_PLAYER;
 using PCM;
 using System;
 using System.Collections.Generic;
