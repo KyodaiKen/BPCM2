@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Compressors\Compressors.csproj" />
-    <ProjectReference Include="..\NAudioLite\NAudioLite.csproj" />
     <ProjectReference Include="..\PCM\Pcm.csproj" />
   </ItemGroup>
 

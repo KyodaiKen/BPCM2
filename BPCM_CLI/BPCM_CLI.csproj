@@ -1,51 +1,55 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>BPCM_CLI</AssemblyName>
-    <UseWpf>true</UseWpf>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>file_icon.ico</ApplicationIcon>
-    <StartupObject></StartupObject>
-    <Description>Entropy encoded ADPCM audio codec</Description>
-    <Company>Kyodai Ken</Company>
-    <PackageLicenseExpression></PackageLicenseExpression>
-    <Copyright>Copyright © Kyodai Ken 2019</Copyright>
-    <Authors>Kyodai Ken</Authors>
-    <Version>2.1.0.1</Version>
-    <PackageId>BPCM2</PackageId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net5.0-windows</TargetFramework>
+		<AssemblyName>BPCM_CLI</AssemblyName>
+		<UseWpf>true</UseWpf>
+		<UseWindowsForms>true</UseWindowsForms>
+		<DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+		<ApplicationIcon>file_icon.ico</ApplicationIcon>
+		<StartupObject></StartupObject>
+		<Description>Entropy encoded ADPCM audio codec</Description>
+		<Company>Kyodai Ken</Company>
+		<PackageLicenseExpression></PackageLicenseExpression>
+		<Copyright>Copyright © Kyodai Ken 2019</Copyright>
+		<Authors>Kyodai Ken</Authors>
+		<Version>2.1.0.1</Version>
+		<PackageId>BPCM2</PackageId>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DebugType>none</DebugType>
+		<DebugSymbols>false</DebugSymbols>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Program.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Program.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Remove="icon.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="icon.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="icon.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="icon.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="Program.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="Program.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BPCM_Core\BPCM_Core.csproj" />
-    <ProjectReference Include="..\BPCM_PLAYER\BPCM_PLAYER.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\BPCM_PLAYER\BPCM_PLAYER.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Properties\" />
+	</ItemGroup>
 
 </Project>

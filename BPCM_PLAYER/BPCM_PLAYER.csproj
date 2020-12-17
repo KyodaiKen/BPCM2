@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BPCM_Core\BPCM_Core.csproj" />
+    <ProjectReference Include="..\BPCM_CODEC\BPCM_CODEC.csproj" />
     <ProjectReference Include="..\NAudioLite\NAudioLite.csproj" />
   </ItemGroup>
 

@@ -1,8 +1,7 @@
-﻿using BPCM;
-using BPCM.CompressionHelper;
-using BPCM.Easy;
-using BPCM.Wave;
-using NAudioLitle.Wave;
+﻿using BPCM_CODEC;
+using BPCM_CODEC.Helpers;
+using BPCM_PLAYER;
+using PCM;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,17 +17,17 @@ namespace BPCM_CLI
         {
             Console.WriteLine("");
             Console.WriteLine(String.Concat(Enumerable.Repeat("-", 24)) + " Usage " + String.Concat(Enumerable.Repeat("-", 24)));
-            Console.WriteLine("Encode:   bpcm input.wav output.bpcm");
-            Console.WriteLine("Decode:   bpcm input.bpcm output.wav");
-            Console.WriteLine("Playback: bpcm input.bpcm");
+            Console.WriteLine("Encode:   bpcm input.wav output.bpcm2");
+            Console.WriteLine("Decode:   bpcm input.bpcm2 output.wav");
+            Console.WriteLine("Playback: bpcm input.bpcm2");
             Console.WriteLine("You can place your option parameters anywhere you like!");
             Console.WriteLine("");
             Console.WriteLine("== Encoding options ==");
             Console.WriteLine("-c     string    Use specific compression method");
             Console.WriteLine("                   ► none");
             Console.WriteLine("                   ► ac (Arithmetic order0)");
-            Console.WriteLine("                   ► BZIP2");
-            Console.WriteLine("                   ► LZMA");
+            Console.WriteLine("                   ► brotli");
+            Console.WriteLine("                   ► lzma");
             Console.WriteLine("                   ► fast  (use best result of LZMA and ac [DEFAULT] [RECOMMENDED!]),");
             Console.WriteLine("                   ► brute (use best result of all)");
             Console.WriteLine("-bs    number    Sets the block size in milliseconds, default is 100 ms");
@@ -37,7 +36,7 @@ namespace BPCM_CLI
             Console.WriteLine("-vol   decimal   Sets the initial playback volume from 0 ... 1 (float). Default is 0.12.");
             Console.WriteLine("-r     decimal   Sets the initial playback speed as a factor value (float). Default is 1.");
             Console.WriteLine("-od    number    Audio output device (0 = system default)");
-            for (int x = 0; x < WaveOut.DeviceCount; x++) Console.WriteLine("                   ► " + x + ": " + WaveOut.GetCapabilities(x).ProductName);
+            for (int x = 0; x < AudioDeviceManager.AudioDevices.Count; x++) Console.WriteLine("                   ► " + x + ": " + AudioDeviceManager.AudioDevices[x].Name);
             Console.WriteLine("");
             Console.WriteLine("== Tools ==");
             Console.WriteLine("-a               Analyzes a bpcm2 file and outputs a JSON to the console.");
@@ -49,6 +48,91 @@ namespace BPCM_CLI
             Console.WriteLine("-dither          Enables random dithering on decoding, makes decoding slower and produces");
             Console.WriteLine("                 a different decoding result on each run.");
             return 0x7F;
+        }
+
+        private static void PrintInfo(Decoder.Info inf)
+        {
+            Console.WriteLine("{0,-20} {1}", "File size:", ByteFormatter.FormatBytes(inf.FileSize));
+            Console.WriteLine("{0,-20} {1}", "Compression:", inf.CompressionUsedString);
+            Console.WriteLine("{0,-20} {1} Hz", "Sampling rate:", inf.SamplingRate);
+            Console.WriteLine("{0,-20} {1}", "Channels:", inf.NumberOfChannels);
+            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Nominal block size:", Math.Round(((double)inf.BlockSizeNominal / inf.SamplingRate) * 1000, 3), inf.BlockSizeNominal);
+            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Minimum block size:", Math.Round(((double)inf.BlockSizeMinimum / inf.SamplingRate) * 1000, 3), inf.BlockSizeMinimum);
+            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Average block size:", Math.Round(((double)inf.BlockSizeAverage / inf.SamplingRate) * 1000, 3), inf.BlockSizeAverage);
+            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Maximum block size:", Math.Round(((double)inf.BlockSizeMaximum / inf.SamplingRate) * 1000, 3), inf.BlockSizeMaximum);
+            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Minimum Bitrate:", inf.BitrateMin);
+            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Average Bitrate:", inf.BitrateAvg);
+            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Maximum Bitrate:", inf.BitrateMax);
+            Console.WriteLine("{0,-20} {1}", "Number of frames:", inf.FrameSet.Count);
+            Console.WriteLine("{0,-20} {1}", "Duration:", inf.DurationString);
+        }
+
+        private static void MoveConsoleCursor(Nullable<int> left, Nullable<int> top, bool relative = true)
+        {
+            if(relative)
+            {
+                if (Console.CursorLeft + (int)left < 0) {
+                    Console.CursorLeft = 0;
+                }
+                else
+                {
+                    if (Console.CursorLeft + (int)left > Console.BufferWidth-1)
+                        Console.CursorLeft = Console.BufferWidth-1;
+                    else
+                        Console.CursorLeft += (int)left;
+                }
+                if (Console.CursorTop + (int)top < 0)
+                {
+                    Console.CursorTop = 0;
+                }
+                else
+                {
+                    if (Console.CursorTop + top > Console.BufferHeight-1)
+                        Console.CursorTop = Console.BufferHeight-1;
+                    else
+                        Console.CursorTop += (int)top;
+                }
+            }
+            else
+            {
+                if(!left.Equals(null))
+                {
+                    if (left < 0)
+                    {
+                        Console.CursorLeft = 0;
+                    }
+                    else
+                    {
+                        if (left > Console.BufferWidth)
+                        {
+                            Console.CursorLeft = Console.BufferWidth-1;
+                        }
+                        else
+                        {
+                            Console.CursorLeft = (int)left;
+                        }
+                    }
+                }
+
+                if (!top.Equals(null))
+                {
+                    if (top < 0)
+                    {
+                        Console.CursorTop = 0;
+                    }
+                    else
+                    {
+                        if (top > Console.BufferHeight)
+                        {
+                            Console.CursorTop = Console.BufferHeight-1;
+                        }
+                        else
+                        {
+                            Console.CursorTop = (int)top;
+                        }
+                    }
+                }
+            }
         }
 
         private static int Main(string[] args)
@@ -67,7 +151,7 @@ namespace BPCM_CLI
             int oldCurTop = 0;
             string titleAndVersionInfo = "";
 
-            Algorithm compression = Algorithm.fast;
+            Algorithm algorithm = Algorithm.fast;
 
             #region Parse Parameters
 
@@ -148,42 +232,59 @@ namespace BPCM_CLI
                 if (analyze)
                 {
                     Decoder.Info inf = Decoder.AnalyzeFile(infile);
-                    string JSON =
-                       "{\"SamplingRate\":" + inf.SamplingRate + ","
-                     + "\"NumberOfChannels\":" + inf.NumberOfChannels + ","
-                     + "\"BitrateAvg\":" + inf.BitrateAvg + ","
-                     + "\"BitrateMin\":" + inf.BitrateMin + ","
-                     + "\"BitrateMax\":" + inf.BitrateMax + ","
-                     + "\"BlockSizeNominal\":" + inf.BlockSizeNominal + ","
-                     + "\"BlockSizeAverage\":" + inf.BlockSizeAverage + ","
-                     + "\"BlockSizeMinimum\":" + inf.BlockSizeMinimum + ","
-                     + "\"BlockSizeMaximum\":" + inf.BlockSizeMaximum + ","
-                     + "\"CompressionUsedString\":\"" + inf.CompressionUsedString + "\","
-                     + "\"Duration\":" + inf.Duration.ToString() + ","
-                     + "\"DurationSampleCount\":" + inf.DurationSampleCount + ","
-                     + "\"DurationString\":\"" + inf.DurationString + "\","
-                     + "\"FrameCount\":" + inf.FrameSet.Count + ","
-                     + "\"Frames\":{";
+                    var JSON = new System.Text.StringBuilder();
+                    string sep = string.Empty;
+                    JSON.Append("{\"SamplingRate\":" + inf.SamplingRate.ToString()).Append(',')
+                        .Append("\"NumberOfChannels\":" + inf.NumberOfChannels.ToString()).Append(',')
+                        .Append("\"BitrateAvg\":" + inf.BitrateAvg.ToString()).Append(',')
+                        .Append("\"BitrateMin\":").Append(inf.BitrateMin.ToString()).Append(',')
+                        .Append("\"BitrateMax\":").Append(inf.BitrateMax.ToString()).Append(',')
+                        .Append("\"BlockSizeNominal\":").Append(inf.BlockSizeNominal.ToString()).Append(',')
+                        .Append("\"BlockSizeAverage\":").Append(inf.BlockSizeAverage.ToString()).Append(',')
+                        .Append("\"BlockSizeMinimum\":").Append(inf.BlockSizeMinimum.ToString()).Append(',')
+                        .Append("\"BlockSizeMaximum\":").Append(inf.BlockSizeMaximum.ToString()).Append(',')
+                        .Append("\"CompressionUsedString\":\"").Append(inf.CompressionUsedString).Append("\",")
+                        .Append("\"Duration\":").Append(inf.Duration.ToString()).Append(',')
+                        .Append("\"DurationSampleCount\":").Append(inf.DurationSampleCount.ToString()).Append(',')
+                        .Append("\"DurationString\":\"").Append(inf.DurationString).Append("\",")
+                        .Append("\"FrameCount\":").Append(inf.FrameSet.Count.ToString()).Append(',')
+                        .Append("\"Frames\":{");
+
                     foreach (Frame f in inf.FrameSet)
                     {
-                        JSON = string.Concat(new string[] {
-                            JSON, "\"", f.FrameNumber.ToString(), "\":"
-                         , "{\"Channels\":", f.Channels.ToString(), ","
-                         , "\"CompressionType\":\"", f.CompressionTypeDescr, "\","
-                         , "\"DataLength\":", f.DataLength.ToString(), ","
-                         , "\"DataOffset\":", f.DataOffset.ToString(), ","
-                         , "\"SampleCount\":", f.SampleCount.ToString(), ","
-                         , "\"Duration\":", f.Duration.ToString(), ","
-                         , "\"HederLength\":", f.HederLength.ToString(), ","
-                         , "\"TimeStamp\":", f.TimeStamp.ToString(), "},"});
+                        JSON.Append(sep);
+                        sep = ",";
+                        JSON.Append("\"").Append(f.FrameNumber.ToString()).Append("\":")
+                            .Append("{\"Channels\":").Append(f.Channels.ToString()).Append(",")
+                            .Append("\"CompressionType\":\"").Append(f.CompressionTypeDescr).Append("\",")
+                            .Append("\"DataLength\":").Append(f.DataLength.ToString()).Append(",")
+                            .Append("\"DataOffset\":").Append(f.DataOffset.ToString()).Append(",")
+                            .Append("\"SampleCount\":").Append(f.SampleCount.ToString()).Append(",")
+                            .Append("\"Duration\":").Append(f.Duration.ToString()).Append(",")
+                            .Append("\"HederLength\":").Append(f.HederLength.ToString()).Append(",")
+                            .Append("\"TimeStamp\":").Append(f.TimeStamp.ToString()).Append("}");
                     }
-                    JSON = JSON.Substring(0, JSON.Length - 1);
-                    JSON = JSON + "},\"FrameLengthHistogram\":{";
+
+                    JSON.Append("},\"FrameLengthHistogram\":{");
+                    sep = string.Empty;
                     foreach (KeyValuePair<int, long> p in inf.FrameSampleCountHistogram)
-                        JSON = string.Concat(new string[] { JSON, "\"", p.Key.ToString(), "\":", p.Value.ToString(), "," });
-                    JSON = JSON.Substring(0, JSON.Length - 1);
-                    JSON = JSON + "}}";
-                    Console.Write(JSON);
+                    {
+                        JSON.Append(sep);
+                        sep = ",";
+                        JSON.Append("\"" + p.Key.ToString()).Append("\":").Append(p.Value.ToString());
+                    }
+
+                    JSON.Append("},\"FrameCompressionHistogram\":{");
+                    sep = string.Empty;
+                    foreach (KeyValuePair<string, long> p in inf.FrameCompressionHistogram)
+                    {
+                        JSON.Append(sep);
+                        sep = ",";
+                        JSON.Append("\"" + p.Key).Append("\":").Append(p.Value.ToString());
+                    }
+
+                    JSON.Append("}}");
+                    Console.Write(JSON.ToString());
                     return 0;
                 }
 
@@ -223,28 +324,28 @@ namespace BPCM_CLI
                         switch (args[i + 1].ToLower())
                         {
                             case "none":
-                                compression = Algorithm.none;
+                                algorithm = Algorithm.none;
                                 break;
 
-                            case "bzip2":
-                                compression = Algorithm.BZIP2;
+                            case "brotli":
+                                algorithm = Algorithm.brotli;
                                 break;
 
                             case "lzma":
-                                compression = Algorithm.lzma;
+                                algorithm = Algorithm.lzma;
                                 break;
 
                             case "ac":
-                                compression = Algorithm.arithmetic;
+                                algorithm = Algorithm.arithmetic;
                                 break;
 
                             case "fast":
-                                compression = Algorithm.fast;
+                                algorithm = Algorithm.fast;
                                 break;
 
                             case "brute":
                             case "bruteforce":
-                                compression = Algorithm.bruteForce;
+                                algorithm = Algorithm.bruteForce;
                                 break;
                         }
                     }
@@ -277,9 +378,9 @@ namespace BPCM_CLI
                 Console.WriteLine("Encoding file:         " + infile);
                 Console.WriteLine("to:                    " + outfile);
                 Console.WriteLine("with block size:       " + blockSize.ToString());
-                Console.WriteLine("Compression algorithm: " + compression.ToString());
+                Console.WriteLine("Compression algorithm: " + algorithm.ToString());
                 Console.WriteLine("SilenceThreshold:      " + SilenceThreshold.ToString());
-                Console.WriteLine(String.Concat(Enumerable.Repeat("\x2509", 80)));
+                Console.WriteLine(string.Concat(Enumerable.Repeat("\x2509", 80)));
 
                 e_start = TimeSpan.FromTicks(DateTime.Now.Ticks);
 
@@ -289,11 +390,9 @@ namespace BPCM_CLI
                         infile
                       , outfile, new Encoder.Parameters()
                       {
-                          BlockSize = blockSize
-                          ,
-                          Compression = compression
-                          ,
-                          SilenceThreshold = SilenceThreshold
+                            BlockSize = blockSize
+                          , Compression = algorithm
+                          , SilenceThreshold = SilenceThreshold
                       }
                       , updateStatus
                       , 1000 / 7.5
@@ -319,13 +418,21 @@ namespace BPCM_CLI
             else
             {
                 e_start = TimeSpan.FromTicks(DateTime.Now.Ticks);
-                Decoder.DecodeBPCMFile(infile, outfile, updateStatus, 1000 / 7.5, true, initialized, enableDithering);
+
+                Decoder.DecodeBPCMFile(infile, outfile, new Decoder.ConfigurationBean()
+                {
+                    UpdateInterval = 1000 / 7.5,
+                    Analyze = false,
+                    EnableDither = enableDithering,
+                    FileOpenedEvent = initialized,
+                    ProgressUpdateEvent = updateStatus
+                });
 
                 void initialized(Decoder.Info inf)
                 {
                     Console.WriteLine("{0,-20} {1}", "Filename:", infile);
                     Console.WriteLine("{0,-20} {1}", "to:", outfile);
-                    Console.WriteLine("{0,-20} {1}", "File size:", BPCM.Helpers.ByteFormatter.FormatBytes(new FileInfo(infile).Length));
+                    Console.WriteLine("{0,-20} {1}", "File size:", ByteFormatter.FormatBytes(new FileInfo(infile).Length));
                     PrintInfo(inf);
                     Console.WriteLine(String.Concat(Enumerable.Repeat("\x2509", 80)));
                 }
@@ -341,67 +448,12 @@ namespace BPCM_CLI
             return 0;
         }
 
-        private static void PrintInfo(Decoder.Info inf)
+        private static void play(string BPCMFile, float volume, double rate, int OutputDeviceIndex, bool EnableDither = false)
         {
-            Console.WriteLine("{0,-20} {1}", "Compression:", inf.CompressionUsedString);
-            Console.WriteLine("{0,-20} {1} Hz", "Sampling rate:", inf.SamplingRate);
-            Console.WriteLine("{0,-20} {1}", "Channels:", inf.NumberOfChannels);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Nominal block size:", Math.Round(((double)inf.BlockSizeNominal / inf.SamplingRate) * 1000, 3), inf.BlockSizeNominal);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Minimum block size:", Math.Round(((double)inf.BlockSizeMinimum / inf.SamplingRate) * 1000, 3), inf.BlockSizeMinimum);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Average block size:", Math.Round(((double)inf.BlockSizeAverage / inf.SamplingRate) * 1000, 3), inf.BlockSizeAverage);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Maximum block size:", Math.Round(((double)inf.BlockSizeMaximum / inf.SamplingRate) * 1000, 3), inf.BlockSizeMaximum);
-            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Minimum Bitrate:", inf.BitrateMin);
-            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Average Bitrate:", inf.BitrateAvg);
-            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Maximum Bitrate:", inf.BitrateMax);
-            Console.WriteLine("{0,-20} {1}", "Number of frames:", inf.FrameSet.Count);
-            Console.WriteLine("{0,-20} {1}", "Duration:", inf.DurationString);
-        }
-
-        private static void printInfo(BitstreamReader.Stats s)
-        {
-            TimeSpan dur = TimeSpan.FromSeconds(s.Duration);
-            Console.WriteLine("{0,-20} {1}", "Compression:", string.Join(", ", s.CompressionUsed.ToArray()));
-            Console.WriteLine("{0,-20} {1} Hz", "Sampling rate:", s.FrameSet[0].SamplingRate);
-            Console.WriteLine("{0,-20} {1}", "Channels:", s.FrameSet[0].Channels);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Nominal block size:", Math.Round(((double)s.BlockSizeNominal / s.FrameSet[0].SamplingRate) * 1000, 3), s.BlockSizeNominal);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Minimum block size:", Math.Round(((double)s.BlockSizeMinimum / s.FrameSet[0].SamplingRate) * 1000, 3), s.BlockSizeMinimum);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Average block size:", Math.Round(((double)s.BlockSizeAverage / s.FrameSet[0].SamplingRate) * 1000, 3), s.BlockSizeAverage);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Maximum block size:", Math.Round(((double)s.BlockSizeMaximum / s.FrameSet[0].SamplingRate) * 1000, 3), s.BlockSizeMaximum);
-            Console.WriteLine("{0,-20} {2} ({1,0:0.000} ms)", "Longest silent blck:", Math.Round(((double)s.LongestSilentFrame / s.FrameSet[0].SamplingRate) * 1000, 3), s.LongestSilentFrame);
-            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Minimum Bitrate:", s.BitrateMinimum);
-            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Average Bitrate:", s.BitrateAverage);
-            Console.WriteLine("{0,-20} {1,-6} Bit/s", "Maximum Bitrate:", s.BitrateMaximum);
-            Console.WriteLine("{0,-20} {1}", "Number of frames:", s.FrameSet.Count);
-            Console.WriteLine("{0,-20} {1:00}d {2:00}h {3:00}m {4:00}s {5:000.000}ms", "Duration:", dur.Days, dur.Hours, dur.Minutes, dur.Seconds, (s.Duration - Math.Floor(s.Duration)) * 1000);
-        }
-
-        private static void play(string bpcmfile, float volume, double rate, int output_device = 0, bool enDither = true)
-        {
-            Console.WriteLine("{0,-20} {1}", "File path:", new FileInfo(bpcmfile).Directory.FullName);
-            Console.WriteLine("{0,-20} {1}", "File name:", new FileInfo(bpcmfile).Name);
-
-            //Analyse stream
-            FileStream s = new FileStream(bpcmfile, FileMode.Open, FileAccess.Read, FileShare.Read, 1048576, false);
-
-            void AnalyisisProgress(float percentDone)
-            {
-                Console.CursorLeft = 0;
-                Console.Write(String.Concat(Enumerable.Repeat(" ", Console.BufferWidth - 1)));
-                Console.CursorLeft = 0;
-                Console.Write("{0,-20} {1, -4:0.00} percent done.", "Analyzing file:", percentDone);
-            }
-
-            BitstreamReader p = new BitstreamReader(s, aupevt: AnalyisisProgress);
-            p.EnableDither = enDither;
-
-            Console.CursorLeft = 0;
-            Console.Write(String.Concat(Enumerable.Repeat(" ", Console.BufferWidth - 1)));
-            Console.CursorLeft = 0;
-
-            //Print info
-            Console.WriteLine("{0,-20} {1}", "File size:", BPCM.Helpers.ByteFormatter.FormatBytes(s.Length));
-            printInfo(p.Analysis);
-            Console.WriteLine(String.Concat(Enumerable.Repeat("\x2509", 80)));
+            Decoder.Info FileInfo;
+            FileInfo.FrameSet = new List<Frame>();
+            bool exit = false;
+            int FrameCountStringLength = 0;
 
             //Box line and corner as well as connection chars
             const string strFcF = "\x250C", strFc7 = "\x2510", strFcL = "\x2514", strFcJ = "\x2518"
@@ -410,27 +462,45 @@ namespace BPCM_CLI
 
             //VU meter chars
             string[,] arrVU = { { " ", "\x2580" }, { " ", "\x2584" } };
-            //string[,] arrVU = { { " ", "\x25AE" }, { " ", "\x25AE" } };
 
-            int nBuffers = 16;
-            int fnumLen = p.Analysis.FrameSet.Count.ToString().Length;
-            if (fnumLen < 6) fnumLen = 6;
-            int currFrame = 0;
-            double currTS = 0;
+            //Init player
+            var _player = new Player(BPCMFile, new Player.ConfigurationBean()
+            {
+                Volume = volume,
+                PlaybackRate = rate,
+                WaveOutDevice = OutputDeviceIndex,
+                EnableDithering = EnableDither,
+                AnalysisUpdateEvent = AnalysisUpdate,
+                FileOpenedEvent = FileOpened
+            });
 
-            double speed = rate;
-            bool dontExit = false;
-            WaveOutEvent wavOut;
-            BPCMWaveProvider bpcmWP = new BPCMWaveProvider(p, speed);
+            //Assign events
+            _player.PlaybackUpdateEvent = PlaybackUpdate;
+
+            void FileOpened(Decoder.Info inf)
+            {
+                Console.CursorLeft = 0;
+                Console.Write(string.Concat(Enumerable.Repeat(" ", Console.BufferWidth - 1)));
+                Console.CursorLeft = 0;
+                Console.WriteLine("{0,-20} {1}", "File path:", new FileInfo(BPCMFile).Directory.FullName);
+                Console.WriteLine("{0,-20} {1}", "File name:", new FileInfo(BPCMFile).Name);
+                PrintInfo(inf);
+                FileInfo = inf;
+            }
+
+            Console.WriteLine(string.Concat(Enumerable.Repeat("\x2509", 80)));
+
+            FrameCountStringLength = FileInfo.FrameSet.Count.ToString().Length;
+            if (FrameCountStringLength < 6) FrameCountStringLength = 6;
 
             //Prepare lines
-            string strTsLine = String.Concat(Enumerable.Repeat(strFbL, 22))
-                 , strFNumLine = String.Concat(Enumerable.Repeat(strFbL, fnumLen))
-                 , strBitRateLine = String.Concat(Enumerable.Repeat(strFbL, 6))
-                 , strComprLine = String.Concat(Enumerable.Repeat(strFbL, 10))
-                 , strVolumeLine = String.Concat(Enumerable.Repeat(strFbL, 6))
-                 , strRateLine = String.Concat(Enumerable.Repeat(strFbL, 5))
-                 , strVULine = String.Concat(Enumerable.Repeat(strFbL, 58))
+            string strTsLine = string.Concat(Enumerable.Repeat(strFbL, 22))
+                 , strFNumLine = string.Concat(Enumerable.Repeat(strFbL, FrameCountStringLength))
+                 , strBitRateLine = string.Concat(Enumerable.Repeat(strFbL, 6))
+                 , strComprLine = string.Concat(Enumerable.Repeat(strFbL, 10))
+                 , strVolumeLine = string.Concat(Enumerable.Repeat(strFbL, 6))
+                 , strRateLine = string.Concat(Enumerable.Repeat(strFbL, 5))
+                 , strVULine = string.Concat(Enumerable.Repeat(strFbL, 58))
                  , strVUScale = "-\x221e\x2508"
                                + "-60" + string.Concat(Enumerable.Repeat("\x2508", 6))
                                + "-50" + string.Concat(Enumerable.Repeat("\x2508", 6))
@@ -439,118 +509,21 @@ namespace BPCM_CLI
                                + "-20" + string.Concat(Enumerable.Repeat("\x2508", 4))
                                + "-12" + string.Concat(Enumerable.Repeat("\x2508", 2))
                                + "-6\x2508-3\x25080"
-                 , strVUBlank = String.Concat(Enumerable.Repeat(" ", 58));
+                 , strVUBlank = string.Concat(Enumerable.Repeat(" ", 58));
 
-            void readDone(Frame CurrentFrame)
-            {
-                currFrame = CurrentFrame.FrameNumber;
-                PCM.ADPCM.ADPCM4BIT.VolumeInfo vi = CurrentFrame.VolumeInfo;
-
-                currTS = CurrentFrame.TimeStamp;
-                TimeSpan tsnPos = TimeSpan.FromSeconds(currTS);
-                int days = tsnPos.Days; if (days > 9) days = 9; //Clamp days never to be more than 9.
-                string strPos = String.Format("{0}d {1:00}h {2:00}m {3:00}s {4:000}ms", days, tsnPos.Hours, tsnPos.Minutes, tsnPos.Seconds, tsnPos.Milliseconds);
-                //Debug.WriteLine(strPos);
-
-                //Refresh the status line
-                Console.CursorLeft = 0;
-                Console.Write(strFbI + strALR + "{0,21}" + strFbI + "{1," + fnumLen + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "x{5,4:0.##}" + strFbI,
-                                strPos, currFrame + 1, Math.Round(((CurrentFrame.DataLength + CurrentFrame.HederLength) / CurrentFrame.Duration) * 8, 0), CurrentFrame.CompressionTypeDescr, Math.Round(wavOut.Volume * 100, 1), Math.Round(speed, 2));
-
-                //Calculate bar length from dB value.
-                const int max = 57, lowpoint = 62; //lowpoint is the positive value of the minus dB the scale will start
-                int L = (int)Math.Round(((vi.dbPeakL + lowpoint) / lowpoint) * max);
-                if (L < 0) L = 0; //clamp
-
-                int R = (int)Math.Round(((vi.dbPeakR + lowpoint) / lowpoint) * max);
-                if (R < 0) R = 0; //clamp
-
-                string strVUMeterL = arrVU[0, 1] + String.Concat(Enumerable.Repeat(arrVU[0, 1], L)) + String.Concat(Enumerable.Repeat(arrVU[0, 0], max - L));
-                string strVUMeterR = arrVU[1, 1] + String.Concat(Enumerable.Repeat(arrVU[1, 1], R)) + String.Concat(Enumerable.Repeat(arrVU[1, 0], max - R));
-
-                Console.CursorLeft = 0;
-                Console.CursorTop += 2;
-                Console.WriteLine(strFbI + "L " + strVUMeterL + strFbI);
-
-                Console.CursorLeft = 0;
-                Console.CursorTop += 1;
-                Console.WriteLine(strFbI + "R " + strVUMeterR + strFbI);
-
-                Console.CursorLeft = 0;
-                Console.CursorTop -= 5;
-            }
-
-            void woutInit()
-            {
-                wavOut = new WaveOutEvent();
-                wavOut.DeviceNumber = output_device;
-                wavOut.DesiredLatency = 100 * wavOut.NumberOfBuffers;
-                wavOut.PlaybackStopped += stopped;
-                wavOut.Init(bpcmWP);
-                wavOut.Volume = volume;
-                nBuffers = wavOut.NumberOfBuffers;
-                Console.CursorVisible = false;
-            }
-
-            woutInit();
-
-            bpcmWP.readDone = readDone;
-            bpcmWP.volume = 1;
-
-            void changeRate()
-            {
-                if (WaveOut.GetCapabilities(wavOut.DeviceNumber).SupportsPlaybackRateControl && 1 == 2)
-                {
-                    wavOut.Rate = (float)speed;
-                }
-                else
-                {
-                    reinitBPCMWaveSrc();
-                }
-            }
-
-            void reinitBPCMWaveSrc()
-            {
-                dontExit = true;
-                volume = wavOut.Volume;
-                wavOut.Stop();
-                wavOut.Dispose();
-                wavOut = null;
-                bpcmWP = null;
-                GC.Collect();
-                bpcmWP = new BPCMWaveProvider(p, speed);
-                bpcmWP.volume = 1;
-                bpcmWP.readDone = readDone;
-                p.Seek(currFrame - 1); //fix for skipping
-                woutInit();
-                wavOut.Play();
-            }
-
-            string DeviceName = "";
-            for (int x = 0; x < WaveOut.DeviceCount; x++)
-            {
-                if (x == wavOut.DeviceNumber)
-                {
-                    DeviceName = "[" + x + "] " + WaveOut.GetCapabilities(x).ProductName;
-                    break;
-                }
-            }
-
-            //Playback stopped event handler method
-            void stopped(object sender, StoppedEventArgs e) { if (!dontExit) exitNow(); else dontExit = false; }
 
             //Drawing status box
-            Console.WriteLine("{0,-20} {1}", "Playing on:", DeviceName);
+            Console.WriteLine("{0,-20} {1}", "Playing on:", AudioDeviceManager.AudioDevices[OutputDeviceIndex].Name);
             Console.WriteLine("");
 
             //Upper corner of box
             Console.WriteLine(strFcF + strTsLine + strFbT + strFNumLine + strFbT + strBitRateLine + strFbT + strComprLine + strFbT + strVolumeLine + strFbT + strRateLine + strFc7);
             //Descriptions
-            Console.WriteLine(strFbI + "{0,-22}" + strFbI + "{1,-" + fnumLen + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + "{4,-6}" + strFbI + "{5,-5}" + strFbI, "timestamp", "frame#", "bit/s", "compr.", "volume", "rate");
+            Console.WriteLine(strFbI + "{0,-22}" + strFbI + "{1,-" + FrameCountStringLength + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + "{4,-6}" + strFbI + "{5,-5}" + strFbI, "timestamp", "frame#", "bit/s", "compr.", "volume", "rate");
             //Divider lines
             Console.WriteLine(strFbLT + strTsLine + strFbMMT + strFNumLine + strFbMMT + strBitRateLine + strFbMMT + strComprLine + strFbMMT + strVolumeLine + strFbMMT + strRateLine + strFbRT);
             //Status line (empty here)
-            Console.WriteLine(strFbI + strALR + "{0,21}" + strFbI + "{1," + fnumLen + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "{5,5}" + strFbI, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A");
+            Console.WriteLine(strFbI + strALR + "{0,21}" + strFbI + "{1," + FrameCountStringLength + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "{5,5}" + strFbI, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A");
             //Bottom corner of box
             Console.WriteLine(strFbLT + strTsLine + strFbUMT + strFNumLine + strFbUMT + strBitRateLine + strFbUMT + strComprLine + strFbUMT + strVolumeLine + strFbUMT + strRateLine + strFbRT);
 
@@ -569,28 +542,75 @@ namespace BPCM_CLI
             Console.WriteLine("Speed:   S, D and F. You'll figure it out. ;) You can also use CTRL!");
 
             //Set cursor top position to the status line.
-            Console.CursorTop -= 10;
+            MoveConsoleCursor(0, -10, true);
 
-            bool exit = false;
-
-            void exitNow()
+            void AnalysisUpdate(float progress)
             {
-                try
-                {
-                    Console.CursorTop += 10;
-                    Console.CursorLeft = 0;
-                    Console.CursorVisible = true;
-                    wavOut?.Dispose();
-                    p = null;
-                }
-                catch
-                {
-                }
-                Environment.Exit(0);
+                Console.CursorLeft = 0;
+                Console.Write(string.Concat(Enumerable.Repeat(" ", Console.BufferWidth - 1)));
+                Console.CursorLeft = 0;
+                Console.Write("{0,-20} {1, -4:0.00} percent done.", "Analyzing file:", progress);
             }
 
-            //Start playback
-            wavOut.Play();
+            void PlaybackUpdate(Player.PlaybackUpdateInfo Info)
+            {
+                var currFrame = Info.CurrentFrame.FrameNumber;
+                VolumeInfo[] vi = Info.CurrentFrame.VolumeInfo;
+
+                var currTS = Info.CurrentFrame.TimeStamp;
+                TimeSpan tsnPos = TimeSpan.FromSeconds(currTS);
+                int days = tsnPos.Days; if (days > 9) days = 9; //Clamp days never to be more than 9.
+                string strPos = string.Format
+                (
+                      "{0}d {1:00}h {2:00}m {3:00}s {4:000}ms"
+                    , days
+                    , tsnPos.Hours
+                    , tsnPos.Minutes
+                    , tsnPos.Seconds
+                    , Math.Round((currTS - Math.Floor(currTS)) * 1000)
+                );
+                //Debug.WriteLine(strPos);
+
+                //Refresh the status line
+                Console.CursorLeft = 0;
+                Console.Write(strFbI + strALR + "{0,21}" + strFbI + "{1," + FrameCountStringLength + "}" + strFbI + "{2,6}" + strFbI + "{3,-10}" + strFbI + strAUD + "{4,4}%" + strFbI + "x{5,4:0.##}" + strFbI,
+                                strPos, currFrame + 1, Math.Round(((Info.CurrentFrame.DataLength + Info.CurrentFrame.HederLength) / Info.CurrentFrame.Duration) * 8, 0), Info.CurrentFrame.CompressionTypeDescr, Math.Round(Info.Volume * 100, 1), Math.Round(Info.PlaybackRate, 2));
+
+                //Calculate bar length from dB value.
+                const int max = 57, lowpoint = 62; //lowpoint is the positive value of the minus dB the scale will start
+                int L, R;
+                if (vi != null)
+                {
+                    L = (int)Math.Round(((vi[0].dbPeak + lowpoint) / lowpoint) * max);
+                    if (L < 0) L = 0; //clamp
+
+                    R = (int)Math.Round(((vi[1].dbPeak + lowpoint) / lowpoint) * max);
+                    if (R < 0) R = 0; //clamp
+                }
+                else
+                {
+                    L = 0;
+                    R = 0;
+                }
+   
+
+                string strVUMeterL = arrVU[0, 1] + string.Concat(Enumerable.Repeat(arrVU[0, 1], L)) + string.Concat(Enumerable.Repeat(arrVU[0, 0], max - L));
+                string strVUMeterR = arrVU[1, 1] + string.Concat(Enumerable.Repeat(arrVU[1, 1], R)) + string.Concat(Enumerable.Repeat(arrVU[1, 0], max - R));
+
+                Console.CursorLeft = 0;
+                MoveConsoleCursor(0, 2, true);
+                Console.WriteLine(strFbI + "L " + strVUMeterL + strFbI);
+
+                Console.CursorLeft = 0;
+                MoveConsoleCursor(0, 1, true);
+                Console.WriteLine(strFbI + "R " + strVUMeterR + strFbI);
+
+                Console.CursorLeft = 0;
+                MoveConsoleCursor(0, -5, true);
+            }
+
+
+            _player.Playing = true;
 
             //Crude key scanning
             while (!exit)
@@ -602,32 +622,28 @@ namespace BPCM_CLI
                     {
                         case ConsoleKey.UpArrow:
                         case ConsoleKey.VolumeUp:
-                            if (wavOut.Volume + 0.001f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.001f;
+                            if (_player.Volume + 0.001f >= 1.0f) _player.Volume = 1.0f; else _player.Volume += 0.001f;
                             break;
 
                         case ConsoleKey.DownArrow:
                         case ConsoleKey.VolumeDown:
-                            if (wavOut.Volume - 0.001f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.001f;
+                            if (_player.Volume - 0.001f <= 0.0f) _player.Volume = 0.0f; else _player.Volume -= 0.001f;
                             break;
 
                         case ConsoleKey.LeftArrow:
-                            p.Seek(currTS - 1);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position -= 1;
                             break;
 
                         case ConsoleKey.RightArrow:
-                            p.Seek(currTS + 1);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position += 1;
                             break;
 
                         case ConsoleKey.S:
-                            if (speed - 0.01 <= 0.01f) speed = 0.01; else speed -= 0.01;
-                            changeRate();
+                            if (_player.PlaybackRate - 0.01 <= 0.01f) _player.PlaybackRate = 0.01; else _player.PlaybackRate -= 0.01;
                             break;
 
                         case ConsoleKey.F:
-                            if (speed + 0.01 >= 4.0f) speed = 4.0; else speed += 0.01;
-                            changeRate();
+                            if (_player.PlaybackRate + 0.01 >= 4.0f) _player.PlaybackRate = 4.0; else _player.PlaybackRate += 0.01;
                             break;
                     }
                 }
@@ -636,13 +652,11 @@ namespace BPCM_CLI
                     switch (key.Key)
                     {
                         case ConsoleKey.LeftArrow:
-                            p.Seek(currTS - 60);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position -= 60;
                             break;
 
                         case ConsoleKey.RightArrow:
-                            p.Seek(currTS + 60);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position += 60;
                             break;
                     }
                 }
@@ -653,123 +667,80 @@ namespace BPCM_CLI
                     {
                         case ConsoleKey.UpArrow:
                         case ConsoleKey.VolumeUp:
-                            if (wavOut.Volume + 0.01f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.01f;
+                            if (_player.Volume + 0.01f >= 1.0f) _player.Volume = 1.0f; else _player.Volume += 0.01f;
                             break;
-
                         case ConsoleKey.DownArrow:
                         case ConsoleKey.VolumeDown:
-                            if (wavOut.Volume - 0.01f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.01f;
+                            if (_player.Volume - 0.01f <= 0.0f) _player.Volume = 0.0f; else _player.Volume -= 0.01f;
                             break;
-
                         case ConsoleKey.PageUp:
-                            if (wavOut.Volume + 0.1f >= 1.0f) wavOut.Volume = 1.0f; else wavOut.Volume += 0.1f;
+                            if (_player.Volume + 0.1f >= 1.0f) _player.Volume = 1.0f; else _player.Volume += 0.1f;
                             break;
-
                         case ConsoleKey.PageDown:
-                            if (wavOut.Volume - 0.1f <= 0.0f) wavOut.Volume = 0.0f; else wavOut.Volume -= 0.1f;
+                            if (_player.Volume - 0.1f <= 0.0f) _player.Volume = 0.0f; else _player.Volume -= 0.1f;
                             break;
-
                         case ConsoleKey.LeftArrow:
-                            p.Seek(currTS - 5d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position -= 5;
                             break;
-
                         case ConsoleKey.RightArrow:
-                            p.Seek(currTS + 5d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position += 5;
                             break;
-
                         case ConsoleKey.D1:
-                            p.Seek(60d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 60;
                             break;
-
                         case ConsoleKey.D2:
-                            p.Seek(120d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 120;
                             break;
-
                         case ConsoleKey.D3:
-                            p.Seek(180d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 180;
                             break;
-
                         case ConsoleKey.D4:
-                            p.Seek(240d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 240;
                             break;
-
                         case ConsoleKey.D5:
-                            p.Seek(300d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 300;
                             break;
-
                         case ConsoleKey.D6:
-                            p.Seek(360d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 360;
                             break;
-
                         case ConsoleKey.D7:
-                            p.Seek(420d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 420;
                             break;
-
                         case ConsoleKey.D8:
-                            p.Seek(480d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 480;
                             break;
-
                         case ConsoleKey.D9:
-                            p.Seek(540d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 540;
                             break;
-
                         case ConsoleKey.D0:
-                            p.Seek(600d);
-                            bpcmWP.DropRingBuffer();
+                            _player.Position = 600;
                             break;
-
                         case ConsoleKey.S:
-                            if (speed - 0.1 <= 0.01f) speed = 0.01; else speed -= 0.1;
-                            changeRate();
+                            if (_player.PlaybackRate - 0.1 <= 0.01f) _player.PlaybackRate = 0.01; else _player.PlaybackRate -= 0.1;
                             break;
-
                         case ConsoleKey.D:
-                            speed = 1f;
-                            changeRate();
+                            _player.PlaybackRate = 1;
                             break;
-
                         case ConsoleKey.F:
-                            if (speed + 0.1 >= 4.0f) speed = 4.0; else speed += 0.1;
-                            changeRate();
+                            if (_player.PlaybackRate + 0.1 >= 4.0f) _player.PlaybackRate = 4.0; else _player.PlaybackRate += 0.1;
                             break;
-
                         case ConsoleKey.Home:
-                            p.Seek(0);
+                            _player.Position = 0;
                             break;
-
                         case ConsoleKey.Spacebar:
-                            switch (wavOut.PlaybackState)
-                            {
-                                case PlaybackState.Playing:
-                                    wavOut.Pause();
-                                    break;
-
-                                case PlaybackState.Paused:
-                                    wavOut.Play();
-                                    break;
-                            }
+                            _player.Playing = !_player.Playing;
                             break;
-
                         case ConsoleKey.Escape:
                         case ConsoleKey.Q:
-                            Console.CursorTop -= 10;
-                            exitNow();
+                            MoveConsoleCursor(0, 10, true);
+                            Console.CursorLeft = 0;
+                            exit = true;
                             break;
                     }
                 }
             }
-            p = null;
+
+            _player?.Dispose();
         }
     }
 }

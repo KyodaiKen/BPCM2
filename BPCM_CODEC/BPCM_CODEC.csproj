@@ -1,7 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Helpers\CSV.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Helpers\CSV.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Compressors\Compressors.csproj" />
+    <ProjectReference Include="..\PCM\PCM.csproj" />
+  </ItemGroup>
 
 </Project>
