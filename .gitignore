@@ -355,4 +355,4 @@ MigrationBackup/
 # Custom
 bpcm_stream_new.txt
 Unused
-/BPCM_CLI/Properties/launchSettings.json
+launchSettings.json
