@@ -21,6 +21,7 @@ namespace BPCM_PLAYER
 
         private BitstreamReader streamBPCM;
         private RingBuffer rb;
+        private int rbSize;
         private Frame frame0;
         private Frame currentFrame;
         private double tsOffset;
@@ -34,13 +35,14 @@ namespace BPCM_PLAYER
             srfactor = srf;
             int speedSR = (int)Math.Round(frame0.SamplingRate * srf, 0);
             waveFormat = WaveFormat.CreateCustomFormat(WaveFormatEncoding.Pcm, speedSR, frame0.Channels, speedSR * frame0.Channels * 2, frame0.Channels * 2, 16);
-            rb = new RingBuffer(2097152);
+            rbSize = streamBPCM.Analysis.BlockSizeMaximum * frame0.Channels * 4;
+            rb = new RingBuffer(rbSize);
             tsOffset = 0;
         }
 
         public void DropRingBuffer()
         {
-            rb = new RingBuffer(2097152);
+            rb = new RingBuffer(rbSize);
         }
 
         public int Read(byte[] buffer, int offset, int count)
