@@ -35,7 +35,7 @@ namespace BPCM_PLAYER
             srfactor = srf;
             int speedSR = (int)Math.Round(frame0.SamplingRate * srf, 0);
             waveFormat = WaveFormat.CreateCustomFormat(WaveFormatEncoding.Pcm, speedSR, frame0.Channels, speedSR * frame0.Channels * 2, frame0.Channels * 2, 16);
-            rbSize = streamBPCM.Analysis.BlockSizeMaximum * frame0.Channels * 4;
+            rbSize = streamBPCM.Analysis.BlockSizeMaximum * frame0.Channels * 8;
             rb = new RingBuffer(rbSize);
             tsOffset = 0;
         }
